@@ -1,12 +1,10 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-export default function MFAVerifyPage() {
+function MFAVerifyForm() {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") ?? "/encounters";
@@ -74,5 +72,13 @@ export default function MFAVerifyPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function MFAVerifyPage() {
+  return (
+    <Suspense>
+      <MFAVerifyForm />
+    </Suspense>
   );
 }
