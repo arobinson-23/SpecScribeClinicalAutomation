@@ -94,6 +94,17 @@ export function MarketingNav() {
         {/* ── Mobile layout (< md) ── */}
         <div className="md:hidden relative flex items-center h-full px-4">
 
+          {/* Left side — hamburger (signed-out) */}
+          <SignedOut>
+            <button
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              className="p-2 text-white/60 hover:text-white transition-colors"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </SignedOut>
+
           {/* Logo — absolute center */}
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
             <Link
@@ -109,24 +120,11 @@ export function MarketingNav() {
           <div className="ml-auto flex items-center gap-2">
             <SignedOut>
               <Link
-                href="/sign-in"
-                className="text-sm font-medium text-white/70 hover:text-white px-3 py-1.5 rounded-full transition-colors"
-              >
-                Log In
-              </Link>
-              <Link
                 href="/sign-up"
                 className="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 px-4 py-1.5 rounded-full transition-colors shadow-lg shadow-blue-600/20"
               >
                 Get Started
               </Link>
-              <button
-                onClick={() => setMobileMenuOpen((o) => !o)}
-                className="ml-1 p-2 text-white/60 hover:text-white transition-colors"
-                aria-label="Toggle navigation menu"
-              >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
             </SignedOut>
 
             <SignedIn>
