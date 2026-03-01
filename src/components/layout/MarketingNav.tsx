@@ -8,7 +8,6 @@ import { SignedIn, SignedOut, UserButton, useAuth } from "@clerk/nextjs";
 const links = [
   { href: "/", label: "Home" },
   { href: "/industry-use", label: "Industry Use" },
-  { href: "/#how-it-works", label: "How It Works" },
   { href: "/pricing", label: "Pricing" },
   { href: "/demo", label: "Book a Demo" },
 ];

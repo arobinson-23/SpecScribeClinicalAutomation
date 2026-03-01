@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Shield, Lock, ShieldCheck, RefreshedCw, AlertTriangle } from 'lucide-react';
+import { Shield, Lock, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ComplianceModule() {
