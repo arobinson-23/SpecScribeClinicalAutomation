@@ -4,11 +4,9 @@ export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 export default function MFAVerifyPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") ?? "/encounters";
