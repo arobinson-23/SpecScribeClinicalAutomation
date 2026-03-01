@@ -11,7 +11,7 @@ export default function LandingPage() {
       <section className="pt-16" style={{ background: 'linear-gradient(180deg, #0b0d17 0%, #0b0d17 30%, #eff6ff 75%, #ffffff 100%)' }}>
         <div className="max-w-6xl mx-auto px-8 py-28 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold text-blue-300 uppercase tracking-wide mb-6">
-            ✦ Serving Canadian specialty practices
+            Serving Canadian specialty practices
           </div>
           <h1 className="text-5xl font-black tracking-tight text-white leading-tight mb-5">
             Document less.<br />
@@ -156,7 +156,7 @@ export default function LandingPage() {
       {/* ── FOOTER ── */}
       <footer className="bg-slate-900 py-8 px-8">
         <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-4 text-sm text-white/50">
-          <span className="text-white font-bold">✦ SpecScribe</span>
+          <span className="text-white font-bold">SpecScribe</span>
           <span>PIPEDA (Federal) and HIA (Alberta) Compliant · Made in Canada · © 2026 SpecScribe Inc.</span>
           <div className="flex gap-5">
             <Link href="#" className="hover:text-blue-400 transition-colors">Privacy</Link>

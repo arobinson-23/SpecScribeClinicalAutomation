@@ -80,7 +80,7 @@ export default function IndustryUsePage() {
       <section className="pt-16 bg-gradient-to-b from-coral-pale to-white">
         <div className="max-w-4xl mx-auto px-8 py-24 text-center">
           <div className="inline-flex items-center gap-2 bg-white border border-[#f3c6c6] rounded-full px-4 py-1.5 text-xs font-bold text-blue-600 uppercase tracking-wide mb-6">
-            ✦ For Canadian Clinicians
+            For Canadian Clinicians
           </div>
           <h1 className="text-5xl font-black tracking-tight text-slate-900 leading-tight mb-5">
             Give yourself back to{" "}
@@ -162,7 +162,7 @@ export default function IndustryUsePage() {
           <div className="grid grid-cols-2 gap-16 items-center">
             <CardShell title="AI Draft — Behavioural Health SOAP">
               <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full mb-4">
-                ✦ Draft — awaiting your review
+                Draft — awaiting your review
               </div>
               <div className="space-y-3">
                 {[
@@ -216,7 +216,7 @@ export default function IndustryUsePage() {
           </div>
           <CardShell title="AHCIP Billing Suggestions">
             <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full mb-4">
-              ✦ Review before submitting to AHCIP
+              Review before submitting to AHCIP
             </div>
             <div className="space-y-0">
               {[
@@ -338,7 +338,7 @@ export default function IndustryUsePage() {
       {/* ── FOOTER ── */}
       <footer className="bg-slate-900 py-8 px-8">
         <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-4 text-sm text-white/50">
-          <span className="text-white font-bold">✦ SpecScribe</span>
+          <span className="text-white font-bold">SpecScribe</span>
           <span>PIPEDA (Federal) and HIA (Alberta) Compliant · Made in Canada · © 2026 SpecScribe Inc.</span>
           <div className="flex gap-5">
             <Link href="#" className="hover:text-blue-400 transition-colors">Privacy</Link>

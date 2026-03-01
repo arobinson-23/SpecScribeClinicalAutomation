@@ -15,7 +15,7 @@ export default function PricingPage() {
 
                 <div className="max-w-4xl mx-auto text-center relative">
                     <div className="inline-flex items-center gap-2 bg-blue-100 border border-blue-200 rounded-full px-4 py-1.5 text-xs font-black text-blue-600 uppercase tracking-widest mb-6">
-                        ✦ Maximum ROI for specialty clinics
+                        Maximum ROI for specialty clinics
                     </div>
                     <h1 className="text-6xl font-black text-slate-900 tracking-tight leading-[1.05] mb-8">
                         The last documentation tool you&apos;ll <span className="text-blue-600 italic">ever</span> need.
@@ -227,7 +227,7 @@ export default function PricingPage() {
             {/* ── FOOTER ── */}
             <footer className="bg-slate-900 py-12 px-8">
                 <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-8 text-sm text-white/30 border-t border-white/5 pt-12">
-                    <span className="text-white font-bold tracking-tight">✦ SpecScribe</span>
+                    <span className="text-white font-bold tracking-tight">SpecScribe</span>
                     <div className="flex gap-10">
                         <Link href="#" className="hover:text-blue-400 transition-colors">Privacy Policy</Link>
                         <Link href="#" className="hover:text-blue-400 transition-colors">Compliance Hub</Link>

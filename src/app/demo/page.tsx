@@ -83,7 +83,7 @@ export default function DemoPage() {
                     {/* Left: Content */}
                     <div className="lg:sticky lg:top-32">
                         <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 text-xs font-bold text-blue-600 uppercase tracking-wide mb-6">
-                            ✦ Premium Clinical Demo
+                            Premium Clinical Demo
                         </div>
                         <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-[1.1] mb-6">
                             See how AI fits into your <span className="text-blue-600">workflow.</span>
