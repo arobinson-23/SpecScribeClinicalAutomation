@@ -45,7 +45,7 @@ export function VolumeVisualizer({ stream, isActive }: VolumeVisualizerProps) {
             let x = 0;
 
             for (let i = 0; i < bufferLength; i++) {
-                const barHeight = (dataArray[i] / 255) * currentCanvas.height;
+                const barHeight = ((dataArray[i] ?? 0) / 255) * currentCanvas.height;
 
                 // Gradient styling
                 const gradient = currentCtx.createLinearGradient(0, currentCanvas.height, 0, 0);

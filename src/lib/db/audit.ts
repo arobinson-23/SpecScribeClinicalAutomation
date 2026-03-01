@@ -65,7 +65,7 @@ export async function writeAuditLog(params: AuditParams): Promise<void> {
         errorCode,
         fieldsAccessed: fieldsAccessed ?? undefined,
         fieldsChanged: fieldsChanged ?? undefined,
-        metadata,
+        metadata: metadata as object,
         entryHash,
       },
     });

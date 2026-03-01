@@ -77,7 +77,7 @@ export function buildDocumentReference(params: {
     discharge:           { code: "18842-5", display: "Discharge summary" },
   };
 
-  const loinc = LOINC_CODES[params.noteType] ?? LOINC_CODES["progress_note"];
+  const loinc = LOINC_CODES[params.noteType] ?? { code: "11506-3", display: "Progress note" };
 
   return {
     resourceType: "DocumentReference",
