@@ -7,23 +7,22 @@ export default function LandingPage() {
       <MarketingNav />
 
       {/* ── HERO ── */}
-      {/* Hero — dark top seamlessly continues the nav, then fades into light */}
       <section className="pt-16" style={{ background: 'linear-gradient(180deg, #0b0d17 0%, #0b0d17 30%, #eff6ff 75%, #ffffff 100%)' }}>
-        <div className="max-w-6xl mx-auto px-8 py-28 text-center">
+        <div className="max-w-6xl mx-auto px-6 sm:px-8 py-16 sm:py-28 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold text-blue-300 uppercase tracking-wide mb-6">
             Serving Canadian specialty practices
           </div>
-          <h1 className="text-5xl font-black tracking-tight text-white leading-tight mb-5">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight mb-5">
             Document less.<br />
             <span className="text-blue-400">Care more.</span>
           </h1>
-          <p className="text-xl text-blue-100/70 max-w-lg mx-auto mb-10 leading-relaxed">
+          <p className="text-base sm:text-xl text-blue-100/70 max-w-lg mx-auto mb-10 leading-relaxed">
             SpecScribe listens to your encounter, writes your note, and suggests billing codes — so you can focus on your patient.
           </p>
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/login?mode=signup"
-              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-full transition-colors shadow-lg shadow-blue-600/30"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-full transition-colors shadow-lg shadow-blue-600/30"
             >
               Start Free Trial
             </Link>
@@ -38,15 +37,15 @@ export default function LandingPage() {
       </section>
 
       {/* ── DEMO PANEL ── */}
-      <section className="max-w-5xl mx-auto px-8 py-20" id="how-it-works">
+      <section className="max-w-5xl mx-auto px-6 sm:px-8 py-14 sm:py-20" id="how-it-works">
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-3">Live encounter demo</p>
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Three panels. One workflow.</h2>
-        <p className="text-slate-500 mb-10">Transcript → AI note → Patient handout, generated in real time from a single conversation.</p>
+        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-2">Three panels. One workflow.</h2>
+        <p className="text-slate-500 mb-8 sm:mb-10">Transcript → AI note → Patient handout, generated in real time from a single conversation.</p>
 
-        <div className="bg-blue-50 rounded-2xl p-5 flex gap-4">
+        <div className="bg-blue-50 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row gap-4">
 
           {/* TRANSCRIPT */}
-          <div className="bg-white rounded-xl p-5 flex-1 flex flex-col shadow-sm">
+          <div className="bg-white rounded-xl p-5 sm:flex-1 flex flex-col shadow-sm">
             <h3 className="font-bold text-slate-900 mb-4">Transcript</h3>
             <div className="flex flex-col justify-between flex-1 gap-3">
               <div className="flex items-end gap-2">
@@ -77,7 +76,7 @@ export default function LandingPage() {
           </div>
 
           {/* CLINICIAN NOTE */}
-          <div className="bg-white rounded-xl p-5 flex-1 flex flex-col shadow-sm">
+          <div className="bg-white rounded-xl p-5 sm:flex-1 flex flex-col shadow-sm">
             <h3 className="font-bold text-slate-900 mb-3">Clinician Note</h3>
             <div className="flex items-center gap-1.5 mb-1">
               <span className="text-blue-600 font-bold text-base leading-none">+</span>
@@ -100,7 +99,7 @@ export default function LandingPage() {
           </div>
 
           {/* PATIENT HANDOUT */}
-          <div className="bg-white rounded-xl p-5 flex-1 flex flex-col shadow-sm">
+          <div className="bg-white rounded-xl p-5 sm:flex-1 flex flex-col shadow-sm">
             <h3 className="font-bold text-slate-900 mb-3">Patient Handout</h3>
             <p className="text-xs font-bold text-slate-900 mb-1">Patient Handout</p>
             <p className="text-xs text-slate-400 mb-1">Created  August 17, 2023  08:45 am</p>
@@ -121,7 +120,7 @@ export default function LandingPage() {
 
       {/* ── STATS ── */}
       <section className="bg-slate-900 py-14">
-        <div className="max-w-4xl mx-auto px-8 grid grid-cols-3 gap-px bg-white/10">
+        <div className="max-w-4xl mx-auto px-6 sm:px-8 grid grid-cols-1 sm:grid-cols-3 gap-px bg-white/10">
           {[
             { n: "38%", label: "reduction in documentation time per encounter" },
             { n: "40%", label: "less charting outside of working hours" },
@@ -136,14 +135,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-24 text-center px-8" id="pricing">
-        <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4">
+      <section className="py-16 sm:py-24 text-center px-6 sm:px-8" id="pricing">
+        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">
           Ready to reclaim your <span className="text-blue-600">evenings?</span>
         </h2>
-        <p className="text-slate-500 text-lg max-w-md mx-auto mb-10">
+        <p className="text-slate-500 text-base sm:text-lg max-w-md mx-auto mb-10">
           Join Canada&apos;s forward-thinking specialty practices. 30-day free trial — no credit card required.
         </p>
-        <div className="flex justify-center gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
           <Link href="/pricing" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-md transition-colors shadow-lg shadow-blue-600/20">
             Compare Plans & ROI →
           </Link>
@@ -154,10 +153,10 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-slate-900 py-8 px-8">
-        <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-4 text-sm text-white/50">
+      <footer className="bg-slate-900 py-8 px-6 sm:px-8">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 text-sm text-white/50">
           <span className="text-white font-bold">SpecScribe</span>
-          <span>PIPEDA (Federal) and HIA (Alberta) Compliant · Made in Canada · © 2026 SpecScribe Inc.</span>
+          <span className="text-center text-xs sm:text-sm">PIPEDA (Federal) and HIA (Alberta) Compliant · Made in Canada · © 2026 SpecScribe Inc.</span>
           <div className="flex gap-5">
             <Link href="#" className="hover:text-blue-400 transition-colors">Privacy</Link>
             <Link href="#" className="hover:text-blue-400 transition-colors">Terms</Link>

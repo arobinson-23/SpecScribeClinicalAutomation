@@ -78,18 +78,18 @@ export default function IndustryUsePage() {
 
       {/* ── HERO ── */}
       <section className="pt-16 bg-gradient-to-b from-coral-pale to-white">
-        <div className="max-w-4xl mx-auto px-8 py-24 text-center">
+        <div className="max-w-4xl mx-auto px-6 sm:px-8 py-16 sm:py-24 text-center">
           <div className="inline-flex items-center gap-2 bg-white border border-[#f3c6c6] rounded-full px-4 py-1.5 text-xs font-bold text-blue-600 uppercase tracking-wide mb-6">
             For Canadian Clinicians
           </div>
-          <h1 className="text-5xl font-black tracking-tight text-slate-900 leading-tight mb-5">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 leading-tight mb-5">
             Give yourself back to{" "}
             <em className="not-italic text-blue-600">your patients.</em>
           </h1>
-          <p className="text-xl text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed">
+          <p className="text-base sm:text-xl text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed">
             SpecScribe listens to your encounter, drafts the note, and handles documentation — so Canada&apos;s physicians can do what they trained for: practice medicine.
           </p>
-          <div className="flex justify-center gap-3 flex-wrap">
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
             <Link href="/demo" className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-md transition-colors text-sm">
               Request a Demo →
             </Link>
@@ -102,15 +102,15 @@ export default function IndustryUsePage() {
 
       {/* ── STATS BAR ── */}
       <section className="bg-slate-900 py-14">
-        <div className="max-w-4xl mx-auto px-8 grid grid-cols-4 divide-x divide-white/10">
+        <div className="max-w-4xl mx-auto px-6 sm:px-8 grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10">
           {[
             { n: "38%", label: "reduction in documentation time per encounter" },
             { n: "40%", label: "less charting outside of working hours" },
             { n: "23%", label: "more face time with each patient" },
             { n: "2 hrs", label: "saved per physician per day on average" },
           ].map((s) => (
-            <div key={s.n} className="text-center px-6 py-4">
-              <div className="text-4xl font-black text-blue-400 tracking-tight mb-2">{s.n}</div>
+            <div key={s.n} className="bg-slate-900 text-center px-4 sm:px-6 py-6 sm:py-4">
+              <div className="text-3xl sm:text-4xl font-black text-blue-400 tracking-tight mb-2">{s.n}</div>
               <div className="text-xs text-white/50 max-w-[150px] mx-auto leading-relaxed">{s.label}</div>
             </div>
           ))}
@@ -118,11 +118,11 @@ export default function IndustryUsePage() {
       </section>
 
       {/* ── FEATURE 1: Connect Care ── */}
-      <section className="max-w-5xl mx-auto px-8 py-24" id="how-it-works">
-        <div className="grid grid-cols-2 gap-16 items-center">
+      <section className="max-w-5xl mx-auto px-6 sm:px-8 py-16 sm:py-24" id="how-it-works">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-blue-600 mb-3">Connect Care Integration</p>
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
               Every answer — right when you need it.
             </h2>
             <p className="text-slate-500 leading-relaxed mb-8">
@@ -157,9 +157,9 @@ export default function IndustryUsePage() {
       </section>
 
       {/* ── FEATURE 2: Specialty Notes ── */}
-      <section className="bg-slate-50 py-24">
-        <div className="max-w-5xl mx-auto px-8">
-          <div className="grid grid-cols-2 gap-16 items-center">
+      <section className="bg-slate-50 py-16 sm:py-24">
+        <div className="max-w-5xl mx-auto px-6 sm:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
             <CardShell title="AI Draft — Behavioural Health SOAP">
               <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full mb-4">
                 Draft — awaiting your review
@@ -180,7 +180,7 @@ export default function IndustryUsePage() {
             </CardShell>
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-blue-600 mb-3">Specialty-Specific Notes</p>
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
                 Notes that think like you do.
               </h2>
               <p className="text-slate-500 leading-relaxed mb-8">
@@ -197,11 +197,11 @@ export default function IndustryUsePage() {
       </section>
 
       {/* ── FEATURE 3: AHCIP Billing ── */}
-      <section className="max-w-5xl mx-auto px-8 py-24">
-        <div className="grid grid-cols-2 gap-16 items-center">
+      <section className="max-w-5xl mx-auto px-6 sm:px-8 py-16 sm:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-blue-600 mb-3">AHCIP Billing Guidance</p>
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
               Bill what you earned. Every time.
             </h2>
             <p className="text-slate-500 leading-relaxed mb-8">
@@ -240,14 +240,14 @@ export default function IndustryUsePage() {
       </section>
 
       {/* ── SPECIALTIES ── */}
-      <section className="bg-slate-50 py-24">
-        <div className="max-w-5xl mx-auto px-8">
-          <div className="text-center max-w-xl mx-auto mb-14">
+      <section className="bg-slate-50 py-16 sm:py-24">
+        <div className="max-w-5xl mx-auto px-6 sm:px-8">
+          <div className="text-center max-w-xl mx-auto mb-10 sm:mb-14">
             <p className="text-xs font-black uppercase tracking-widest text-blue-600 mb-3">Canadian Specialties</p>
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-3">Built for high-demand specialty practices</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-3">Built for high-demand specialty practices</h2>
             <p className="text-slate-500">Starting with the highest documentation burden specialties — with more launching through 2026.</p>
           </div>
-          <div className="grid grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {specialties.map(({ icon, name, desc }) => (
               <div
                 key={name}
@@ -263,13 +263,13 @@ export default function IndustryUsePage() {
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section className="bg-slate-900 py-24">
-        <div className="max-w-5xl mx-auto px-8">
-          <div className="text-center mb-14">
+      <section className="bg-slate-900 py-16 sm:py-24">
+        <div className="max-w-5xl mx-auto px-6 sm:px-8">
+          <div className="text-center mb-10 sm:mb-14">
             <p className="text-xs font-black uppercase tracking-widest text-blue-400 mb-3">From Canadian Clinicians</p>
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">What physicians are saying</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">What physicians are saying</h2>
           </div>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map(({ quote, initials, name, role }) => (
               <div key={name} className="bg-white/6 border border-white/10 rounded-xl p-8 flex flex-col gap-5">
                 <p className="text-sm text-white/80 leading-relaxed italic">
@@ -292,11 +292,11 @@ export default function IndustryUsePage() {
       </section>
 
       {/* ── COMPLIANCE ── */}
-      <section className="bg-blue-50 py-24">
-        <div className="max-w-5xl mx-auto px-8 grid grid-cols-2 gap-16 items-center">
+      <section className="bg-blue-50 py-16 sm:py-24">
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-blue-600 mb-3">PIPEDA & HIA Compliance</p>
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
               Built for PIPEDA (Federal) and HIA (Alberta).
             </h2>
             <p className="text-slate-600 leading-relaxed">
@@ -318,14 +318,14 @@ export default function IndustryUsePage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-24 text-center px-8">
-        <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4">
+      <section className="py-16 sm:py-24 text-center px-6 sm:px-8">
+        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">
           Ready to reclaim your <span className="text-blue-600">evenings?</span>
         </h2>
-        <p className="text-slate-500 text-lg max-w-md mx-auto mb-10">
+        <p className="text-slate-500 text-base sm:text-lg max-w-md mx-auto mb-10">
           Join Canada&apos;s forward-thinking specialty practices. 30-day free trial — no credit card required.
         </p>
-        <div className="flex justify-center gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
           <Link href="/login?mode=signup" className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-md transition-colors">
             Start Free Trial →
           </Link>
@@ -336,10 +336,10 @@ export default function IndustryUsePage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-slate-900 py-8 px-8">
-        <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-4 text-sm text-white/50">
+      <footer className="bg-slate-900 py-8 px-6 sm:px-8">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 text-sm text-white/50">
           <span className="text-white font-bold">SpecScribe</span>
-          <span>PIPEDA (Federal) and HIA (Alberta) Compliant · Made in Canada · © 2026 SpecScribe Inc.</span>
+          <span className="text-center text-xs sm:text-sm">PIPEDA (Federal) and HIA (Alberta) Compliant · Made in Canada · © 2026 SpecScribe Inc.</span>
           <div className="flex gap-5">
             <Link href="#" className="hover:text-blue-400 transition-colors">Privacy</Link>
             <Link href="#" className="hover:text-blue-400 transition-colors">Terms</Link>

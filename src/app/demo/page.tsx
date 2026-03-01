@@ -51,12 +51,12 @@ export default function DemoPage() {
         return (
             <div className="min-h-screen bg-white">
                 <MarketingNav />
-                <div className="pt-32 pb-20 px-8 flex flex-col items-center justify-center text-center max-w-2xl mx-auto">
+                <div className="pt-24 sm:pt-32 pb-20 px-6 sm:px-8 flex flex-col items-center justify-center text-center max-w-2xl mx-auto">
                     <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-8 animate-in zoom-in duration-500">
                         <CheckCircle2 className="w-10 h-10" />
                     </div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-4">You&apos;re on the list!</h1>
-                    <p className="text-slate-500 text-lg mb-10 leading-relaxed">
+                    <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">You&apos;re on the list!</h1>
+                    <p className="text-slate-500 text-base sm:text-lg mb-10 leading-relaxed">
                         Thank you for your interest in SpecScribe. One of our clinical specialists will reach out to you within 24 hours to schedule your personalized demo.
                     </p>
                     <Link href="/" className="bg-slate-900 text-white font-bold px-8 py-3 rounded-full hover:bg-slate-800 transition-all">
@@ -77,29 +77,29 @@ export default function DemoPage() {
                 <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-blue-50/30 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2" />
             </div>
 
-            <section className="relative pt-32 pb-20 px-8">
-                <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-20 px-6 sm:px-8">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
 
                     {/* Left: Content */}
                     <div className="lg:sticky lg:top-32">
                         <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 text-xs font-bold text-blue-600 uppercase tracking-wide mb-6">
                             Premium Clinical Demo
                         </div>
-                        <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-[1.1] mb-6">
+                        <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.1] mb-6">
                             See how AI fits into your <span className="text-blue-600">workflow.</span>
                         </h1>
-                        <p className="text-lg text-slate-500 mb-10 leading-relaxed">
+                        <p className="text-base sm:text-lg text-slate-500 mb-8 sm:mb-10 leading-relaxed">
                             Join over 50+ Canadian specialty practices already reclaiming their evenings with SpecScribe. We&apos;ll show you:
                         </p>
 
-                        <div className="space-y-6">
+                        <div className="space-y-5 sm:space-y-6">
                             {[
                                 { icon: Users, title: "Real-time Ambient Scribing", desc: "Watch how SpecScribe captures nuances in complex specialty encounters." },
                                 { icon: Mail, title: "Automated Letters & Handouts", desc: "Generate professional referral letters and patient instructions instantly." },
                                 { icon: Calendar, title: "Direct EHR Integration", desc: "See how notes sync seamlessly into your preferred platform." }
                             ].map((item, idx) => (
-                                <div key={idx} className="flex gap-5 group">
-                                    <div className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:border-blue-200 group-hover:bg-blue-50 transition-all duration-300">
+                                <div key={idx} className="flex gap-4 sm:gap-5 group">
+                                    <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:border-blue-200 group-hover:bg-blue-50 transition-all duration-300">
                                         <item.icon className="w-5 h-5 text-blue-600" />
                                     </div>
                                     <div>
@@ -112,7 +112,7 @@ export default function DemoPage() {
                     </div>
 
                     {/* Right: Form Card */}
-                    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 lg:p-10 shadow-2xl relative overflow-hidden">
+                    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 sm:p-8 lg:p-10 shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
                             <Building2 className="w-32 h-32" />
                         </div>
@@ -144,7 +144,7 @@ export default function DemoPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Practice Name</label>
                                     <input
