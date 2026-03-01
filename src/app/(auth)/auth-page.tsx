@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { LogoIcon } from "@/components/ui/LogoIcon";
 import { Eye, EyeOff, Loader2, ArrowRight, ShieldCheck, UserPlus, LogIn } from "lucide-react";
 
-export default function AuthPage() {
+function AuthPageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get("callbackUrl") ?? "/encounters";
@@ -321,5 +321,13 @@ export default function AuthPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function AuthPage() {
+    return (
+        <Suspense>
+            <AuthPageInner />
+        </Suspense>
     );
 }
