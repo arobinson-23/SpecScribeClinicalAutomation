@@ -32,10 +32,11 @@ export function EncounterList() {
                 {encounters.map((encounter) => (
                     <div
                         key={encounter.id}
-                        className="p-5 bg-white/[0.03] border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.05] transition-all group"
+                        className="flex flex-col p-5 bg-[#131929] border border-white/10 rounded-2xl hover:border-blue-500/30 hover:bg-[#161e33] transition-all group cursor-pointer"
                     >
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="p-2 bg-blue-500/10 rounded-lg">
+                        {/* Card Header */}
+                        <div className="flex items-center justify-between mb-5">
+                            <div className="p-2 bg-blue-500/15 border border-blue-500/20 rounded-lg">
                                 <User className="w-4 h-4 text-blue-400" />
                             </div>
                             <button className="text-white/20 hover:text-white/60 transition-colors">
@@ -43,37 +44,39 @@ export function EncounterList() {
                             </button>
                         </div>
 
-                        <div className="space-y-3">
-                            <div>
-                                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Patient Pseudo</p>
-                                <p className="text-sm font-bold text-white">{encounter.patient}</p>
-                            </div>
+                        {/* Patient ID */}
+                        <div className="mb-4">
+                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Patient Pseudo</p>
+                            <p className="text-base font-black text-white tracking-tight">{encounter.patient}</p>
+                        </div>
 
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <p className="text-[10px] font-medium text-white/30 uppercase tracking-widest mb-1">Specialty</p>
-                                    <p className="text-xs text-white/80">{encounter.specialty}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-medium text-white/30 uppercase tracking-widest mb-1">Status</p>
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${encounter.status === 'Finalized'
-                                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                                            : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                                        }`}>
-                                        {encounter.status}
-                                    </span>
-                                </div>
-                            </div>
+                        {/* Specialty */}
+                        <div className="mb-3">
+                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Specialty</p>
+                            <p className="text-xs font-semibold text-white/80">{encounter.specialty}</p>
+                        </div>
 
-                            <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 text-white/40">
-                                    <Calendar className="w-3 h-3" />
-                                    <span className="text-[10px] font-medium">{encounter.date}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-blue-400">
-                                    <FileText className="w-3 h-3" />
-                                    <span className="text-[10px] font-bold uppercase tracking-tight">View Note</span>
-                                </div>
+                        {/* Status */}
+                        <div className="mb-5">
+                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5">Status</p>
+                            <span className={`inline-flex text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+                                encounter.status === 'Finalized'
+                                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                                    : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                            }`}>
+                                {encounter.status}
+                            </span>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-auto pt-4 border-t border-white/[0.07] flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-white/35">
+                                <Calendar className="w-3 h-3" />
+                                <span className="text-[10px] font-medium">{encounter.date}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-blue-400 group-hover:text-blue-300 transition-colors">
+                                <FileText className="w-3 h-3" />
+                                <span className="text-[10px] font-bold uppercase tracking-tight">View Note</span>
                             </div>
                         </div>
                     </div>
