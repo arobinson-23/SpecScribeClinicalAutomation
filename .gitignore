@@ -1,0 +1,27 @@
+/.claude
+/CLAUDE.md
+node_modules
+.next
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+# env files
+.env
+.env.local
+.env*.local
+
+# build output
+/out
+/dist
+
+# OS
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+npm-debug.log*
+
+# typescript
+*.tsbuildinfo
