@@ -15,8 +15,10 @@ import { EncounterList } from "@/components/dashboard/EncounterList";
 import { ComplianceModule } from "@/components/dashboard/ComplianceModule";
 import { AIInsightsSidebar } from "@/components/dashboard/AIInsightsSidebar";
 import { CollapsibleSidebar } from "@/components/layout/CollapsibleSidebar";
+import { EhrSyncStatus } from "@/components/dashboard/EhrSyncStatus";
 
 export default async function DashboardPage() {
+    try {
     const { userId } = await auth();
 
     if (!userId) {
@@ -93,25 +95,7 @@ export default async function DashboardPage() {
                             <div className="space-y-8">
                                 <ComplianceModule alerts={alerts} />
 
-                                {/* EHR Sync Status */}
-                                <div className="p-6 bg-white/[0.03] border border-white/10 rounded-2xl">
-                                    <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4">EHR Sync Status</h3>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs text-white/60">Epic/Hyperspace</span>
-                                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 uppercase tracking-widest">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                                Connected
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs text-white/60">MediTech</span>
-                                            <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
-                                                Disabled
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <EhrSyncStatus />
                             </div>
                         </div>
                     </div>
@@ -124,4 +108,13 @@ export default async function DashboardPage() {
             </div>
         </div>
     );
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return (
+            <div className="min-h-screen bg-[#0b0d17] text-white p-8 font-mono">
+                <h1 className="text-red-400 text-xl font-bold mb-4">Dashboard Error (debug)</h1>
+                <pre className="text-sm text-white/70 whitespace-pre-wrap">{message}</pre>
+            </div>
+        );
+    }
 }
