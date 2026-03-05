@@ -31,7 +31,6 @@ export default async function PracticeSettingsPage() {
       role: true,
       credentials: true,
       provincialRegistrationNumber: true,
-      mfaEnabled: true,
       lastLoginAt: true,
       lastLoginIp: true,
       firstName: true,
@@ -46,7 +45,7 @@ export default async function PracticeSettingsPage() {
       action: "READ",
       resource: "user",
       resourceId: dbUser.id,
-      fieldsAccessed: ["firstName", "lastName", "email", "role", "mfaEnabled", "lastLoginAt"],
+      fieldsAccessed: ["firstName", "lastName", "email", "role", "lastLoginAt"],
       metadata: { context: "settings_page_view" },
     });
   }
@@ -128,17 +127,10 @@ export default async function PracticeSettingsPage() {
                 </div>
                 <div>
                   <div className="text-white/40 text-xs mb-0.5">Multi-Factor Auth</div>
-                  {dbUser.mfaEnabled ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs text-green-400 font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                      Enabled
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 text-xs text-red-400 font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                      Not enabled — required by PIPEDA/HIA
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1.5 text-xs text-green-400 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    Managed by Clerk
+                  </span>
                 </div>
                 <div>
                   <div className="text-white/40 text-xs mb-0.5">Last Sign-in</div>

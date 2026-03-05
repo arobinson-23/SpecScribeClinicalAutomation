@@ -44,7 +44,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       aiConfidence: true,
       aiRationale: true,
       providerAccepted: true,
-      rejectionRiskScore: true,
+      denial_risk_score: true,
       version: true,
     },
   });

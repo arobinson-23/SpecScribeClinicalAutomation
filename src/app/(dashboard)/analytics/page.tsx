@@ -33,7 +33,7 @@ export default async function AnalyticsPage() {
     prisma.encounter.count({ where: { practiceId, encounterDate: lastMonth, deletedAt: null } }),
     prisma.encounterNote.count({ where: { encounter: { practiceId }, finalizedAt: { not: null } } }),
     prisma.aIInteraction.count({ where: { encounter: { practiceId } } }),
-    prisma.claimSubmission.count({ where: { practiceId, status: "rejected" } }),
+    prisma.claimSubmission.count({ where: { practiceId, status: "denied" } }),
     prisma.claimSubmission.count({ where: { practiceId } }),
   ]);
 

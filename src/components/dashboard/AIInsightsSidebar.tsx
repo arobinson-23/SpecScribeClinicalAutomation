@@ -55,8 +55,8 @@ export function AIInsightsSidebar({ latestCodes }: AIInsightsSidebarProps) {
     const toggle = (key: keyof typeof sections) =>
         setSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
-    const icd10Codes = latestCodes?.codes.filter((c) => c.codeType === "ICD10_CA") ?? [];
-    const ahcipCodes = latestCodes?.codes.filter((c) => c.codeType === "AHCIP") ?? [];
+    const icd10Codes = latestCodes?.codes.filter((c) => c.codeType === "ICD10") ?? [];
+    const ahcipCodes = latestCodes?.codes.filter((c) => c.codeType === "CPT") ?? [];
     const qualityScore = latestCodes?.aiAcceptanceRate != null
         ? Math.round(latestCodes.aiAcceptanceRate * 100)
         : null;

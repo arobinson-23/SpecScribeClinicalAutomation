@@ -43,7 +43,7 @@ export default async function PriorAuthPage() {
   const stats = {
     pending:  priorAuths.filter((p) => ["pending_submission", "submitted", "under_review"].includes(p.status)).length,
     approved: priorAuths.filter((p) => p.status === "approved").length,
-    rejected: priorAuths.filter((p) => p.status === "rejected").length,
+    rejected: priorAuths.filter((p) => p.status === "denied").length,
   };
 
   return (

@@ -11,63 +11,70 @@ datasource db {
 }
 
 model Practice {
-  id                    String                 @id @default(dbgenerated("uuid_generate_v4()"))
-  name                  String
-  specialty             SpecialtyType          @default(behavioral_health)
-  npi                   String                 @unique
-  tax_id                String?
-  address               Json
-  phone                 String?
-  subscriptionTier      SubscriptionTier       @default(basic)
-  stripeCustomerId      String?                @map("stripe_customer_id")
-  stripeSubId           String?                @map("stripe_sub_id")
-  fhirBaseUrl           String?                @map("fhir_base_url")
-  fhirClientId          String?                @map("fhir_client_id")
-  settings              Json                   @default("{}")
-  active                Boolean                @default(true)
-  createdAt             DateTime               @default(now()) @map("created_at")
-  updatedAt             DateTime               @updatedAt @map("updated_at")
-  deletedAt             DateTime?              @map("deleted_at")
-  analyticsEvents       AnalyticsEvent[]
-  auditLogs             AuditLog[]
-  claims                ClaimSubmission[]
-  complianceAlerts      ComplianceAlert[]
-  encounters            Encounter[]
-  patients              Patient[]
-  payerRules            PracticePayerRule[]
-  priorAuths            PriorAuthRequest[]
-  providerVerifications ProviderVerification[]
-  users                 User[]
+  id                           String                 @id @default(dbgenerated("uuid_generate_v4()"))
+  name                         String
+  specialty                    SpecialtyType          @default(behavioral_health)
+  npi                          String?                @unique
+  tax_id                       String?
+  address                      Json
+  phone                        String?
+  provincialRegistrationNumber String?                @unique @map("provincial_registration_number")
+  businessNumber               String?                @map("business_number")
+  subscriptionTier             SubscriptionTier       @default(basic)
+  stripeCustomerId             String?                @map("stripe_customer_id")
+  stripeSubId                  String?                @map("stripe_sub_id")
+  fhirBaseUrl                  String?                @map("fhir_base_url")
+  fhirClientId                 String?                @map("fhir_client_id")
+  ehrType                      EhrType                @default(none) @map("ehr_type")
+  ehrLastSyncAt                DateTime?              @map("ehr_last_sync_at")
+  settings                     Json                   @default("{}")
+  active                       Boolean                @default(true)
+  createdAt                    DateTime               @default(now()) @map("created_at")
+  updatedAt                    DateTime               @updatedAt @map("updated_at")
+  deletedAt                    DateTime?              @map("deleted_at")
+  analyticsEvents              AnalyticsEvent[]
+  auditLogs                    AuditLog[]
+  claims                       ClaimSubmission[]
+  complianceAlerts             ComplianceAlert[]
+  encounters                   Encounter[]
+  migrationLogs                MigrationLog[]
+  patients                     Patient[]
+  payerRules                   PracticePayerRule[]
+  priorAuths                   PriorAuthRequest[]
+  providerVerifications        ProviderVerification[]
+  users                        User[]
 
   @@map("practices")
 }
 
 model User {
-  id                     String                 @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId             String                 @map("practice_id")
-  email                  String                 @unique
-  passwordHash           String?                @map("password_hash")
-  role                   UserRole               @default(staff)
-  firstName              String                 @map("first_name")
-  lastName               String                 @map("last_name")
-  npi                    String?
-  credentials            String?
-  passwordHistory        Json                   @default("[]") @map("password_history")
-  failedLoginCount       Int                    @default(0) @map("failed_login_count")
-  lockedUntil            DateTime?              @map("locked_until")
-  lastLoginAt            DateTime?              @map("last_login_at")
-  lastLoginIp            String?                @map("last_login_ip")
-  active                 Boolean                @default(true)
-  invitedAt              DateTime?              @map("invited_at")
-  inviteToken            String?                @map("invite_token")
-  createdAt              DateTime               @default(now()) @map("created_at")
-  updatedAt              DateTime               @updatedAt @map("updated_at")
-  deletedAt              DateTime?              @map("deleted_at")
-  auditLogs              AuditLog[]
-  encounters             Encounter[]
-  verifications          ProviderVerification[]
-  verificationsPerformed ProviderVerification[] @relation("VerifiedBy")
-  practice               Practice               @relation(fields: [practiceId], references: [id])
+  id                           String                 @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId                   String                 @map("practice_id")
+  email                        String                 @unique
+  passwordHash                 String?                @map("password_hash")
+  role                         UserRole               @default(staff)
+  firstName                    String                 @map("first_name")
+  lastName                     String                 @map("last_name")
+  npi                          String?
+  credentials                  String?
+  provincialRegistrationNumber String?                @map("provincial_registration_number")
+  passwordHistory              Json                   @default("[]") @map("password_history")
+  failedLoginCount             Int                    @default(0) @map("failed_login_count")
+  lockedUntil                  DateTime?              @map("locked_until")
+  lastLoginAt                  DateTime?              @map("last_login_at")
+  lastLoginIp                  String?                @map("last_login_ip")
+  active                       Boolean                @default(true)
+  invitedAt                    DateTime?              @map("invited_at")
+  inviteToken                  String?                @map("invite_token")
+  createdAt                    DateTime               @default(now()) @map("created_at")
+  updatedAt                    DateTime               @updatedAt @map("updated_at")
+  deletedAt                    DateTime?              @map("deleted_at")
+  auditLogs                    AuditLog[]
+  encounters                   Encounter[]
+  migrationLogs                MigrationLog[]
+  verifications                ProviderVerification[]
+  verificationsPerformed       ProviderVerification[] @relation("VerifiedBy")
+  practice                     Practice               @relation(fields: [practiceId], references: [id])
 
   @@index([practiceId])
   @@map("users")
@@ -86,6 +93,7 @@ model Patient {
   address       String?
   insuranceJson String?     @map("insurance_json")
   fhirId        String?     @map("fhir_id")
+  metadata      Json        @default("{}") @map("metadata")
   active        Boolean     @default(true)
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
@@ -94,6 +102,7 @@ model Patient {
   practice      Practice    @relation(fields: [practiceId], references: [id])
 
   @@unique([practiceId, mrn])
+  @@unique([practiceId, fhirId])
   @@index([practiceId])
   @@map("patients")
 }
@@ -122,6 +131,7 @@ model Encounter {
   provider       User               @relation(fields: [providerId], references: [id])
   priorAuths     PriorAuthRequest[]
 
+  @@unique([practiceId, fhirId])
   @@index([practiceId])
   @@index([patientId])
   @@index([providerId])
@@ -333,6 +343,24 @@ model KnowledgeChunk {
   @@map("knowledge_chunks")
 }
 
+model MigrationLog {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId String   @map("practice_id")
+  adminId    String   @map("admin_id")
+  action     String
+  recordId   String?  @map("record_id")
+  recordType String   @map("record_type")
+  status     String
+  sourceFile String?  @map("source_file")
+  detail     Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+  admin      User     @relation(fields: [adminId], references: [id])
+  practice   Practice @relation(fields: [practiceId], references: [id])
+
+  @@index([practiceId])
+  @@map("migration_logs")
+}
+
 model AuditLog {
   id             String      @id @default(dbgenerated("uuid_generate_v4()"))
   practiceId     String      @map("practice_id")
@@ -490,4 +518,11 @@ enum SubscriptionTier {
   basic
   professional
   enterprise
+}
+
+enum EhrType {
+  none
+  epic
+  meditech
+  accuro
 }

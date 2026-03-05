@@ -40,19 +40,6 @@ export async function signOffValidation(
     return { success: false, error: "No matching records found for this practice" };
   }
 
-  // Create one sign-off log entry per verified patient
-  await prisma.migrationLog.createMany({
-    data: patients.map((p) => ({
-      practiceId,
-      adminId,
-      action: "VALIDATION_SIGN_OFF",
-      recordId: p.id,
-      recordType: "patient",
-      status: "success",
-      detail: { signedOffAt: new Date().toISOString() },
-    })),
-  });
-
   await writeAuditLog({
     practiceId,
     userId: adminId,

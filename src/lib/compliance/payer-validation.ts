@@ -31,7 +31,7 @@ export async function validateClaim(params: ValidateClaimParams): Promise<Compli
   // ─── AHCIP Time Documentation Check ────────────────────────────────────
   // Alberta AMA SOMB requires face-to-face time documented for time-based codes
   const hasTimeBasedCode = codes.some(
-    (c) => c.codeType === "AHCIP" && ["08.19A", "03.01AD", "03.07J", "03.08A"].includes(c.code)
+    (c) => c.codeType === "CPT" && ["08.19A", "03.01AD", "03.07J", "03.08A"].includes(c.code)
   );
   const lowerNote = noteText.toLowerCase();
   const hasTimeDocs = /\d+\s*(min|minute|hr|hour)/.test(lowerNote) ||
