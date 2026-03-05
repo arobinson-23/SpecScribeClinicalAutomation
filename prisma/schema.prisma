@@ -52,9 +52,6 @@ model User {
   lastName               String                 @map("last_name")
   npi                    String?
   credentials            String?
-  mfaSecret              String?                @map("mfa_secret")
-  mfaEnabled             Boolean                @default(false) @map("mfa_enabled")
-  mfaBackupCodes         Json                   @default("[]") @map("mfa_backup_codes")
   passwordHistory        Json                   @default("[]") @map("password_history")
   failedLoginCount       Int                    @default(0) @map("failed_login_count")
   lockedUntil            DateTime?              @map("locked_until")

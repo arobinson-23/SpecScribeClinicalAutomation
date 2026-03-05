@@ -1,6 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { verifyMfaCookie, MFA_COOKIE_NAME } from "@/lib/auth/mfa-cookie";
 
 const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 const ABSOLUTE_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -24,12 +23,6 @@ const isPublicRoute = createRouteMatcher([
   "/demo(.*)",
   "/industry-use(.*)",
 ]);
-
-/**
- * Authenticated users may visit these routes before the MFA cookie is present.
- * Prevents the redirect loop while the user is completing the MFA step.
- */
-const isMfaExempt = createRouteMatcher(["/mfa-verify(.*)"]);
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -98,18 +91,9 @@ export default clerkMiddleware(async (auth, request) => {
       response.cookies.delete(SESSION_START_COOKIE);
       return response;
     }
-
-    // Require a valid MFA cookie for all protected routes except the MFA
-    // verify page itself (which the user visits to acquire the cookie).
-    if (!isMfaExempt(request)) {
-      const mfaCookie = request.cookies.get(MFA_COOKIE_NAME);
-      const mfaValid = await verifyMfaCookie(mfaCookie?.value, userId);
-      if (!mfaValid) {
-        const dest = new URL("/mfa-verify", request.url);
-        dest.searchParams.set("redirect", request.nextUrl.pathname);
-        return NextResponse.redirect(dest);
-      }
-    }
+    // MFA is enforced by Clerk during sign-in — a valid Clerk session
+    // (userId truthy) already proves the user completed their required
+    // second factor. No separate ss_mfa cookie check is needed.
   }
 
   // Stamp activity on every authenticated request so that:

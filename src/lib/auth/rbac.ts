@@ -31,7 +31,7 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
   admin: {
     own_encounters: ["read"],
     other_encounters: ["read"],
-    patients: ["read"],
+    patients: ["create", "read", "update"],
     coding: ["read"],
     prior_auth: ["create", "read", "update", "delete"],
     compliance: ["create", "read", "update", "delete"],

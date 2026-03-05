@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { LogoIcon } from "@/components/ui/LogoIcon";
-import { SignedIn, SignedOut, UserButton, useAuth } from "@clerk/nextjs";
+import { UserButton, useAuth } from "@clerk/nextjs";
 
 const links = [
   { href: "/", label: "Home" },
@@ -16,7 +16,7 @@ const links = [
 
 export function MarketingNav() {
   const pathname = usePathname();
-  const { isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -35,9 +35,9 @@ export function MarketingNav() {
             <span className="font-bold text-[1rem] tracking-tight translate-y-[1px]">SpecScribe</span>
           </Link>
 
-          {/* Nav links — center */}
+          {/* Nav links — center (hidden when signed in) */}
           <div className="flex-1 flex justify-center h-full items-center">
-            <SignedOut>
+            {(!isLoaded || !isSignedIn) && (
               <nav className="flex items-center justify-center gap-8">
                 {links.map(({ href, label }) => {
                   const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -54,26 +54,12 @@ export function MarketingNav() {
                   );
                 })}
               </nav>
-            </SignedOut>
+            )}
           </div>
 
           {/* Actions — right */}
           <div className="flex items-center gap-3 shrink-0 h-full">
-            <SignedOut>
-              <Link
-                href="/sign-in"
-                className="text-sm font-medium text-white/70 hover:text-white px-4 py-2 rounded-full transition-colors"
-              >
-                Log In
-              </Link>
-              <Link
-                href="/sign-up"
-                className="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-full transition-colors shadow-lg shadow-blue-600/20"
-              >
-                Get Started
-              </Link>
-            </SignedOut>
-            <SignedIn>
+            {isLoaded && isSignedIn ? (
               <div className="flex items-center gap-4">
                 <Link
                   href="/dashboard"
@@ -84,10 +70,25 @@ export function MarketingNav() {
                   Dashboard
                 </Link>
                 <div className="pl-2 border-l border-white/10 flex items-center">
-                  <UserButton afterSignOutUrl="/" />
+                  <UserButton />
                 </div>
               </div>
-            </SignedIn>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  className="text-sm font-medium text-white/70 hover:text-white px-4 py-2 rounded-full transition-colors"
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-full transition-colors shadow-lg shadow-blue-600/20"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
@@ -104,17 +105,7 @@ export function MarketingNav() {
           </Link>
 
           {/* Right — hamburger (signed-out) or user controls (signed-in) */}
-          <SignedOut>
-            <button
-              onClick={() => setMobileMenuOpen((o) => !o)}
-              className="flex items-center justify-center w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all"
-              aria-label="Toggle navigation menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </SignedOut>
-
-          <SignedIn>
+          {isLoaded && isSignedIn ? (
             <div className="flex items-center gap-3">
               <Link
                 href="/dashboard"
@@ -122,9 +113,17 @@ export function MarketingNav() {
               >
                 Dashboard
               </Link>
-              <UserButton afterSignOutUrl="/" />
+              <UserButton />
             </div>
-          </SignedIn>
+          ) : (
+            <button
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              className="flex items-center justify-center w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          )}
         </div>
       </header>
 

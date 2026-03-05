@@ -32,16 +32,16 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 100);
   const search = searchParams.get("search")?.trim() ?? "";
 
-  // Fetch all patients for this practice (search filter applied post-decryption for encrypted fields)
+  // Fetch patients for this practice.
+  // Names are AES-encrypted in the DB — we can't filter on them in SQL, so when a search
+  // term is provided we pull a large batch (unfiltered) and apply the filter post-decryption.
   const patients = await prisma.patient.findMany({
     where: {
       practiceId,
       deletedAt: null,
-      // MRN is stored plaintext — filter server-side for MRN matches, name filtering done post-decryption
-      ...(search ? { mrn: { contains: search, mode: "insensitive" } } : {}),
     },
     orderBy: { createdAt: "desc" },
-    take: search ? 50 : limit + 1,
+    take: search ? 200 : limit + 1,
     ...(cursor && !search ? { cursor: { id: cursor }, skip: 1 } : {}),
   });
 
@@ -58,15 +58,18 @@ export async function GET(req: NextRequest) {
     createdAt: p.createdAt,
   }));
 
-  // Post-decrypt name filter when searching (encrypted names can't be filtered in SQL)
+  // Post-decrypt name/MRN filter (encrypted names can't be filtered in SQL)
+  const searchLower = search.toLowerCase();
   const items = search
-    ? decrypted.filter(
-        (p) =>
-          p.mrn.toLowerCase().includes(search.toLowerCase()) ||
-          p.firstName.toLowerCase().includes(search.toLowerCase()) ||
-          p.lastName.toLowerCase().includes(search.toLowerCase()) ||
-          `${p.firstName} ${p.lastName}`.toLowerCase().includes(search.toLowerCase()),
-      )
+    ? decrypted
+        .filter(
+          (p) =>
+            p.mrn.toLowerCase().includes(searchLower) ||
+            p.firstName.toLowerCase().includes(searchLower) ||
+            p.lastName.toLowerCase().includes(searchLower) ||
+            `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchLower),
+        )
+        .slice(0, limit)
     : decrypted;
 
   await writeAuditLog({

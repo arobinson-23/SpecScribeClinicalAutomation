@@ -23,7 +23,6 @@ export default async function UsersSettingsPage() {
       firstName: true,
       lastName: true,
       credentials: true,
-      mfaEnabled: true,
       active: true,
       lastLoginAt: true,
       createdAt: true,
@@ -58,6 +57,7 @@ export default async function UsersSettingsPage() {
               <th className="text-left px-4 py-3 font-medium text-slate-500">Email</th>
               <th className="text-left px-4 py-3 font-medium text-slate-500">Role</th>
               <th className="text-left px-4 py-3 font-medium text-slate-500">MFA</th>
+              {/* MFA status is managed by Clerk — enforced at sign-in */}
               <th className="text-left px-4 py-3 font-medium text-slate-500">Last Login</th>
               <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
             </tr>
@@ -90,11 +90,7 @@ export default async function UsersSettingsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {user.mfaEnabled ? (
-                      <span className="text-green-600 text-xs font-medium">✓ Enabled</span>
-                    ) : (
-                      <span className="text-red-500 text-xs font-medium">✗ Disabled</span>
-                    )}
+                    <span className="text-blue-600 text-xs font-medium">Clerk</span>
                   </td>
                   <td className="px-4 py-3 text-slate-400 text-xs">
                     {user.lastLoginAt ? format(new Date(user.lastLoginAt), "MMM d, yyyy") : "Never"}
@@ -113,9 +109,9 @@ export default async function UsersSettingsPage() {
         </table>
       </div>
 
-      <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-        <strong>PIPEDA reminder:</strong> MFA is mandatory for all users with access to ePHI.
-        Users with MFA disabled are flagged in the compliance dashboard.
+      <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+        <strong>MFA is managed by Clerk.</strong> TOTP (authenticator app), SMS code, and email code are all supported.
+        MFA is required for all users at sign-in — configure enforcement in the Clerk Dashboard.
       </div>
 
       {/* Provider College Verification — admin / superadmin only */}

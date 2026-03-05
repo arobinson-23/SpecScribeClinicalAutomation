@@ -70,7 +70,6 @@ export async function POST(req: NextRequest) {
         role: "admin",
         firstName: encryptPHI(admin.firstName),
         lastName: encryptPHI(admin.lastName),
-        mfaEnabled: false,
       },
     });
 

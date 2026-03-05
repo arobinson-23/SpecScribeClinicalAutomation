@@ -66,7 +66,20 @@ export default function Page() {
                                 dividerText: 'text-[10px] font-black uppercase tracking-[0.2em] text-white/30',
                                 formFieldLabel: 'text-xs font-bold text-white/50 uppercase tracking-wider ml-1',
                                 formFieldInput: 'w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium',
-                                footer: 'hidden', // Hide the default footer to use our custom toggle and compliance info
+                                footer: 'hidden',
+                                // MFA / OTP step
+                                formHeaderTitle: 'text-2xl font-bold text-white',
+                                formHeaderSubtitle: 'text-white/40 text-sm',
+                                otpCodeFieldInput: 'bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-blue-500/50',
+                                otpCodeField: 'gap-2',
+                                verificationCodeInput__codeInput: 'bg-white/5 border border-white/10 text-white rounded-xl',
+                                identityPreviewText: 'text-white/70 text-sm',
+                                identityPreviewEditButtonIcon: 'text-white/50',
+                                formResendCodeLink: 'text-blue-400 hover:text-blue-300 text-sm',
+                                alternativeMethodsBlockButton: 'text-white/50 hover:text-white text-sm',
+                                alternativeMethodsBlockButtonArrow: 'text-white/30',
+                                backLink: 'text-white/50 hover:text-white text-sm',
+                                phoneNumberInputBox: 'bg-white/5 border border-white/10 rounded-xl text-white',
                             },
                             layout: {
                                 socialButtonsPlacement: 'bottom'
