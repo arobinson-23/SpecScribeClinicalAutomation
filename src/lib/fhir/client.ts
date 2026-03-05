@@ -1,15 +1,25 @@
 /**
  * FHIR R4 client for EHR integration.
- * Supports SMART on FHIR authorization (client credentials flow for backend).
+ * Supports SMART on FHIR authorization:
+ *   - client_credentials + client_secret (some EHR sandboxes)
+ *   - JWT Bearer assertion (Epic backend production — RS384)
  * All calls are scoped to the practice's configured FHIR endpoint.
  */
 
+import { SignJWT, importPKCS8 } from "jose";
 import { logger } from "@/lib/utils/logger";
+
+export type FHIRAuthMode = "client_secret" | "jwt_bearer";
 
 interface FHIRClientConfig {
   baseUrl: string;
   clientId: string;
-  clientSecret: string;
+  /** Used when authMode = "client_secret" */
+  clientSecret?: string;
+  /** PEM-encoded RSA private key; used when authMode = "jwt_bearer" */
+  privateKeyPem?: string;
+  authMode?: FHIRAuthMode;
+  scopes?: string;
   accessToken?: string;
   tokenExpiresAt?: number;
 }
@@ -24,10 +34,44 @@ export class FHIRClient {
   private config: FHIRClientConfig;
 
   constructor(config: FHIRClientConfig) {
-    this.config = config;
+    this.config = {
+      authMode: "client_secret",
+      scopes: "system/Patient.read system/Encounter.read system/Appointment.read system/DocumentReference.write",
+      ...config,
+    };
   }
 
   // ── Authentication ─────────────────────────────────────────────────────────
+
+  private async getTokenEndpoint(): Promise<string> {
+    const conformanceUrl = `${this.config.baseUrl}/.well-known/smart-configuration`;
+    const res = await fetch(conformanceUrl, { headers: { Accept: "application/json" } });
+    if (!res.ok) {
+      throw new Error(`FHIR SMART configuration fetch failed: ${res.status} ${conformanceUrl}`);
+    }
+    const conformance = await res.json() as Record<string, unknown>;
+    const endpoint = conformance.token_endpoint as string | undefined;
+    if (!endpoint) {
+      throw new Error(`FHIR SMART configuration at ${conformanceUrl} did not include a token_endpoint`);
+    }
+    return endpoint;
+  }
+
+  private async buildJwtBearerAssertion(tokenEndpoint: string): Promise<string> {
+    if (!this.config.privateKeyPem) {
+      throw new Error("JWT Bearer auth requires privateKeyPem in FHIRClient config");
+    }
+    const privateKey = await importPKCS8(this.config.privateKeyPem, "RS384");
+    return new SignJWT({})
+      .setProtectedHeader({ alg: "RS384", kid: "specscribe-epic-key-1" })
+      .setIssuer(this.config.clientId)
+      .setSubject(this.config.clientId)
+      .setAudience(tokenEndpoint)
+      .setJti(crypto.randomUUID())
+      .setIssuedAt()
+      .setExpirationTime("5m")
+      .sign(privateKey);
+  }
 
   private async getAccessToken(): Promise<string> {
     // Reuse cached token if not expired (with 60s buffer)
@@ -39,32 +83,29 @@ export class FHIRClient {
       return this.config.accessToken;
     }
 
-    // Discover token endpoint from SMART conformance statement
-    const conformanceUrl = `${this.config.baseUrl}/.well-known/smart-configuration`;
-    const conformanceRes = await fetch(conformanceUrl, {
-      headers: { Accept: "application/json" },
-    });
+    const tokenEndpoint = await this.getTokenEndpoint();
 
-    if (!conformanceRes.ok) {
-      throw new Error(
-        `FHIR SMART configuration fetch failed: ${conformanceRes.status} ${conformanceUrl}`
-      );
+    let params: URLSearchParams;
+
+    if (this.config.authMode === "jwt_bearer") {
+      const assertion = await this.buildJwtBearerAssertion(tokenEndpoint);
+      params = new URLSearchParams({
+        grant_type: "client_credentials",
+        client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+        client_assertion: assertion,
+        scope: this.config.scopes ?? "",
+      });
+    } else {
+      if (!this.config.clientSecret) {
+        throw new Error("client_secret auth requires clientSecret in FHIRClient config");
+      }
+      params = new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: this.config.clientId,
+        client_secret: this.config.clientSecret,
+        scope: this.config.scopes ?? "",
+      });
     }
-
-    const conformance = await conformanceRes.json();
-    const tokenEndpoint: string | undefined = conformance.token_endpoint;
-    if (!tokenEndpoint) {
-      throw new Error(
-        `FHIR SMART configuration at ${conformanceUrl} did not include a token_endpoint`
-      );
-    }
-
-    const params = new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: this.config.clientId,
-      client_secret: this.config.clientSecret,
-      scope: "system/Patient.read system/Encounter.read system/DocumentReference.write",
-    });
 
     const tokenRes = await fetch(tokenEndpoint, {
       method: "POST",
@@ -77,17 +118,14 @@ export class FHIRClient {
       throw new Error(`FHIR token error: ${tokenRes.status} ${err}`);
     }
 
-    const token: TokenResponse = await tokenRes.json();
+    const token = await tokenRes.json() as TokenResponse;
     this.config.accessToken = token.access_token;
     this.config.tokenExpiresAt = Date.now() + token.expires_in * 1000;
 
     return token.access_token;
   }
 
-  private async request<T>(
-    path: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const accessToken = await this.getAccessToken();
     const url = `${this.config.baseUrl}/${path}`;
 
@@ -110,6 +148,16 @@ export class FHIRClient {
     return res.json() as Promise<T>;
   }
 
+  /** Ping the FHIR server — returns true if reachable and authenticated. */
+  async ping(): Promise<boolean> {
+    try {
+      await this.request<unknown>("metadata");
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   // ── Patient ────────────────────────────────────────────────────────────────
 
   async getPatient(fhirId: string): Promise<FHIRPatient> {
@@ -128,6 +176,17 @@ export class FHIRClient {
     if (params.birthdate) query.set("birthdate", params.birthdate);
     if (params.identifier) query.set("identifier", params.identifier);
     return this.request<FHIRBundle<FHIRPatient>>(`Patient?${query}`);
+  }
+
+  // ── Appointment ────────────────────────────────────────────────────────────
+
+  async getAppointmentsForDate(date: string): Promise<FHIRBundle<FHIRAppointment>> {
+    const query = new URLSearchParams({
+      date: `ge${date}T00:00:00`,
+      _sort: "date",
+      _count: "100",
+    });
+    return this.request<FHIRBundle<FHIRAppointment>>(`Appointment?${query}`);
   }
 
   // ── Encounter ──────────────────────────────────────────────────────────────
@@ -179,6 +238,19 @@ export interface FHIRPatient {
   }>;
 }
 
+export interface FHIRAppointment {
+  resourceType: "Appointment";
+  id?: string;
+  status: string;
+  start?: string;
+  end?: string;
+  serviceType?: Array<{ coding?: Array<{ code: string; display?: string }> }>;
+  participant?: Array<{
+    actor?: { reference: string; display?: string };
+    status: string;
+  }>;
+}
+
 export interface FHIREncounter {
   resourceType: "Encounter";
   id?: string;
@@ -218,6 +290,8 @@ export interface FHIRBundle<T> {
 
 // ── Factory ──────────────────────────────────────────────────────────────────
 
-export function createFHIRClient(config: Omit<FHIRClientConfig, "accessToken" | "tokenExpiresAt">): FHIRClient {
+export function createFHIRClient(
+  config: Omit<FHIRClientConfig, "accessToken" | "tokenExpiresAt">
+): FHIRClient {
   return new FHIRClient(config);
 }
