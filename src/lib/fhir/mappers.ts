@@ -4,7 +4,7 @@
  * Never includes PHI — callers must encrypt after mapping.
  */
 
-import type { FHIRPatient, FHIREncounter, FHIRDocumentReference } from "./client";
+import type { FHIRPatient, FHIREncounter, FHIRAppointment, FHIRDocumentReference } from "./client";
 
 // ── Patient Mapping ──────────────────────────────────────────────────────────
 
@@ -54,6 +54,40 @@ export function fhirEncounterToInternal(fhir: FHIREncounter): InternalEncounterD
     status: fhir.status,
     patientFhirId: patientRef,
     providerFhirId: providerRef,
+  };
+}
+
+// ── Appointment Mapping ──────────────────────────────────────────────────────
+
+export interface InternalAppointmentData {
+  /** FHIR Appointment resource ID — used as fhirId on Encounter for deduplication */
+  fhirAppointmentId: string;
+  encounterDate: Date;
+  patientFhirId: string;
+  providerFhirId?: string;
+  status: string;
+}
+
+export function fhirAppointmentToInternal(fhir: FHIRAppointment): InternalAppointmentData {
+  // Participants — find the patient (actor reference starts with "Patient/")
+  const patientParticipant = fhir.participant?.find(
+    (p) => p.actor?.reference?.startsWith("Patient/")
+  );
+  const providerParticipant = fhir.participant?.find(
+    (p) =>
+      p.actor?.reference?.startsWith("Practitioner/") ||
+      p.actor?.reference?.startsWith("PractitionerRole/")
+  );
+
+  const patientFhirId = patientParticipant?.actor?.reference?.split("/").pop() ?? "";
+  const providerFhirId = providerParticipant?.actor?.reference?.split("/").pop();
+
+  return {
+    fhirAppointmentId: fhir.id ?? "",
+    encounterDate: fhir.start ? new Date(fhir.start) : new Date(),
+    patientFhirId,
+    providerFhirId,
+    status: fhir.status,
   };
 }
 

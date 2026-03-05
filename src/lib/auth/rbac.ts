@@ -13,7 +13,8 @@ type Resource =
   | "practice_settings"
   | "billing"
   | "audit_logs"
-  | "system_config";
+  | "system_config"
+  | "ehr_sync";
 
 type Action = "create" | "read" | "update" | "delete" | "execute";
 
@@ -27,6 +28,7 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     prior_auth: ["read"],
     compliance: ["read"],
     analytics: ["read"],
+    ehr_sync: ["read"],
   },
   admin: {
     own_encounters: ["read"],
@@ -40,6 +42,7 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     practice_settings: ["create", "read", "update", "delete"],
     billing: ["create", "read", "update", "delete"],
     audit_logs: ["read"],
+    ehr_sync: ["read", "execute"],
   },
   biller: {
     own_encounters: ["read"],
@@ -69,6 +72,7 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     billing: ["create", "read", "update", "delete"],
     audit_logs: ["read"],
     system_config: ["create", "read", "update", "delete"],
+    ehr_sync: ["read", "execute"],
   },
 };
 
