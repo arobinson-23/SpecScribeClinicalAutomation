@@ -78,10 +78,10 @@ export default function DemoPage() {
             </div>
 
             <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-20 px-6 sm:px-8">
-                <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 lg:gap-16 items-start">
 
                     {/* Left: Content */}
-                    <div className="lg:sticky lg:top-32">
+                    <div className="md:sticky md:top-24 lg:top-32">
                         <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 text-xs font-bold text-blue-600 uppercase tracking-wide mb-6">
                             Premium Clinical Demo
                         </div>

@@ -1,5 +1,6 @@
 import { prisma } from "./client";
 import { hashSHA256 } from "./encryption";
+import { logger } from "@/lib/utils/logger";
 import type { AuditAction } from "@prisma/client";
 
 interface AuditParams {
@@ -70,7 +71,19 @@ export async function writeAuditLog(params: AuditParams): Promise<void> {
       },
     });
   } catch (error) {
-    // Audit logging must never crash the application
-    console.error("[AuditLog] Failed to write audit log:", error);
+    // Audit logging must never crash the application, but failures must be
+    // visible for alerting. Create a Datadog/CloudWatch log alert on:
+    //   alertCode = "AUDIT_LOG_FAILURE"
+    // to page on-call when this fires in production.
+    logger.error("AUDIT_LOG_FAILURE", {
+      alertCode: "AUDIT_LOG_FAILURE",
+      practiceId,
+      userId,
+      action,
+      resource,
+      resourceId,
+      outcome,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
   }
 }

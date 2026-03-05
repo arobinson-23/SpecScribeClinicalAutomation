@@ -146,7 +146,7 @@ export function AudioRecorder({ encounterId, onTranscriptReady }: AudioRecorderP
         {state === "processing" && (
           <div className="flex items-center gap-2 text-white/50">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm">Transcribing with Deepgram Medical...</span>
+            <span className="text-sm">Transcribing with AWS Medical AI...</span>
           </div>
         )}
       </div>

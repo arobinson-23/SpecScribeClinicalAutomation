@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { hasPermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db/client";
 import { decryptPHISafe } from "@/lib/db/encryption";
 import { writeAuditLog } from "@/lib/db/audit";
@@ -18,17 +19,10 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
-  // ── Auth ────────────────────────────────────────────────────────────────────
-  const { userId: clerkId } = await auth();
-  if (!clerkId) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
-
-  const dbUser = await prisma.user.findFirst({
-    where: { active: true },
-    select: { id: true, practiceId: true, role: true },
-  });
-  if (!dbUser) return NextResponse.json(apiErr("User not found"), { status: 403 });
-
-  if (dbUser.role !== "admin" && dbUser.role !== "superadmin") {
+  // ── Auth + RBAC: admin / superadmin only ───────────────────────────────────
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  if (!hasPermission(dbUser.role, "user_management", "create")) {
     return NextResponse.json(apiErr("Forbidden"), { status: 403 });
   }
 

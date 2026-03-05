@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Mic, Square, Loader2, Gauge, AlertCircle, Search, X, ChevronDown } from "lucide-react";
-import { useMicrophone } from "@/hooks/useMicrophone";
+import { Mic, Square, Loader2, AlertCircle, Search, X, ChevronDown } from "lucide-react";
 import { VolumeVisualizer } from "./VolumeVisualizer";
 import { toast } from "sonner";
 
@@ -14,7 +13,7 @@ interface PatientResult {
   lastName: string;
 }
 
-type ScribeState = "idle" | "modal" | "connecting" | "recording" | "generating";
+type ScribeState = "idle" | "modal" | "recording" | "uploading" | "generating";
 
 const NOTE_TYPES = [
   { value: "progress_note", label: "Progress Note" },
@@ -32,11 +31,10 @@ const NOTE_FORMATS = [
 
 export function ActiveScribe() {
   const router = useRouter();
-  const { stream, startMicrophone, stopMicrophone } = useMicrophone();
 
   const [scribeState, setScribeState] = useState<ScribeState>("idle");
-  const [transcript, setTranscript] = useState("Waiting for voice input...");
-  const [confidence, setConfidence] = useState(0);
+  const [statusText, setStatusText] = useState("Waiting for voice input...");
+  const [durationSecs, setDurationSecs] = useState(0);
 
   // Pre-session modal state
   const [patientSearch, setPatientSearch] = useState("");
@@ -47,23 +45,13 @@ export function ActiveScribe() {
   const [noteFormat, setNoteFormat] = useState("SOAP");
   const [encounterId, setEncounterId] = useState<string | null>(null);
 
-  const socketRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const transcriptRef = useRef("");
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Keep transcriptRef in sync so the stop handler always has the latest value
-  useEffect(() => {
-    transcriptRef.current = transcript;
-  }, [transcript]);
-
-  const cleanupAudio = useCallback(() => {
-    if (socketRef.current) { socketRef.current.close(); socketRef.current = null; }
-    if (mediaRecorderRef.current) { mediaRecorderRef.current.stop(); mediaRecorderRef.current = null; }
-    stopMicrophone();
-  }, [stopMicrophone]);
-
-  // Typeahead patient search
+  // Patient typeahead
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     if (patientSearch.length < 2) { setPatientResults([]); return; }
@@ -81,6 +69,15 @@ export function ActiveScribe() {
       }
     }, 300);
   }, [patientSearch]);
+
+  const stopAudio = useCallback(() => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (mediaRecorderRef.current?.state !== "inactive") mediaRecorderRef.current?.stop();
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  }, []);
+
+  useEffect(() => { return () => stopAudio(); }, [stopAudio]);
 
   async function handleStartSession() {
     if (!selectedPatient) { toast.error("Select a patient before starting"); return; }
@@ -105,105 +102,105 @@ export function ActiveScribe() {
 
       const { data } = await res.json() as { data: { id: string } };
       setEncounterId(data.id);
-      setScribeState("connecting");
-      await startDeepgramSession();
+      await startRecording();
     } catch {
       toast.error("Network error — please try again");
     }
   }
 
-  async function startDeepgramSession() {
+  async function startRecording() {
     try {
-      setTranscript("Requesting microphone access...");
-      const audioStream = await startMicrophone();
-      setTranscript("Securing clinical stream via TLS 1.2+...");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
 
-      const res = await fetch("/api/deepgram");
-      const { key, error } = await res.json() as { key?: string; error?: string };
-      if (error || !key) throw new Error(error ?? "Failed to initialize secure connection");
+      // Prefer webm/opus (Chrome); fall back to whatever the browser supports
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : "";
 
-      const url = "wss://api.deepgram.com/v1/listen?model=nova-2-medical&smart_format=true&interim_results=true";
-      const socket = new WebSocket(url, ["token", key]);
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.start(500);
+      mediaRecorderRef.current = recorder;
 
-      socket.onopen = () => {
-        setTranscript("Ambient listening active. Speak clearly...");
-        setScribeState("recording");
-
-        const MIME_TYPES = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4", ""];
-        let started = false;
-        for (const mimeType of MIME_TYPES) {
-          try {
-            const mr = new MediaRecorder(audioStream, mimeType ? { mimeType } : {});
-            mr.ondataavailable = (event) => {
-              if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) socket.send(event.data);
-            };
-            mr.start(250);
-            mediaRecorderRef.current = mr;
-            started = true;
-            break;
-          } catch { /* try next */ }
-        }
-        if (!started) { toast.error("Audio recording not supported in this browser"); socket.close(); cleanupAudio(); setScribeState("idle"); }
-      };
-
-      socket.onmessage = (message) => {
-        const received = JSON.parse(message.data as string) as {
-          is_final: boolean;
-          channel: { alternatives: Array<{ transcript: string; confidence: number }> };
-        };
-        const alt = received.channel?.alternatives[0];
-        const text = alt?.transcript;
-        const conf = alt?.confidence;
-        if (text && received.is_final) {
-          setTranscript((prev) => {
-            const isPlaceholder = prev === "Ambient listening active. Speak clearly...";
-            return isPlaceholder ? text : prev + " " + text;
-          });
-          if (conf !== undefined) setConfidence(Math.round(conf * 100));
-        }
-      };
-
-      socket.onerror = () => { toast.error("Transcription stream interrupted"); cleanupAudio(); setScribeState("idle"); };
-      socket.onclose = () => cleanupAudio();
-      socketRef.current = socket;
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Initialization failed");
-      cleanupAudio();
+      setDurationSecs(0);
+      timerRef.current = setInterval(() => setDurationSecs((s) => s + 1), 1000);
+      setScribeState("recording");
+      setStatusText("Ambient listening active. Speak clearly...");
+    } catch {
+      toast.error("Microphone access denied");
       setScribeState("idle");
     }
   }
 
   async function handleStopAndFinalize() {
-    const finalTranscript = transcriptRef.current;
     const currentEncounterId = encounterId;
+    if (!currentEncounterId) { setScribeState("idle"); return; }
 
-    // Stop audio
-    if (socketRef.current) { socketRef.current.close(); socketRef.current = null; }
-    if (mediaRecorderRef.current) { mediaRecorderRef.current.stop(); mediaRecorderRef.current = null; }
-    stopMicrophone();
+    // Stop recording and collect the blob
+    const blob = await new Promise<Blob>((resolve) => {
+      const recorder = mediaRecorderRef.current;
+      if (!recorder || recorder.state === "inactive") {
+        resolve(new Blob(chunksRef.current, { type: "audio/webm" }));
+        return;
+      }
+      recorder.onstop = () =>
+        resolve(new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" }));
+      recorder.stop();
+    });
+    stopAudio();
 
-    const hasContent =
-      finalTranscript &&
-      finalTranscript !== "Ambient listening active. Speak clearly..." &&
-      finalTranscript.trim().length > 0;
-
-    if (!currentEncounterId || !hasContent) {
+    if (blob.size === 0) {
       setScribeState("idle");
-      setTranscript("Waiting for voice input...");
+      setStatusText("Waiting for voice input...");
       return;
     }
 
-    setScribeState("generating");
-    setTranscript("Generating clinical note with AI...");
+    setScribeState("uploading");
+    setStatusText("Uploading audio securely to ca-central-1...");
 
     try {
-      const res = await fetch("/api/ai/generate-note", {
+      // Upload + transcribe (AWS Transcribe Medical, ca-central-1)
+      const form = new FormData();
+      form.append("audio", blob, "session.webm");
+      form.append("encounterId", currentEncounterId);
+
+      const transcribeRes = await fetch("/api/ai/transcribe", { method: "POST", body: form });
+      if (!transcribeRes.ok) {
+        toast.error("Transcription failed — navigate to encounter to retry");
+        router.push(`/encounters/${currentEncounterId}`);
+        return;
+      }
+
+      const { data: transcribeData } = await transcribeRes.json() as {
+        data?: { transcript: string; segments: unknown[] };
+      };
+
+      if (!transcribeData?.transcript) {
+        toast.error("No transcript returned — navigate to encounter to retry");
+        router.push(`/encounters/${currentEncounterId}`);
+        return;
+      }
+
+      setScribeState("generating");
+      setStatusText("Generating clinical note with Claude AI...");
+
+      // Generate AI note from transcript
+      const noteRes = await fetch("/api/ai/generate-note", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ encounterId: currentEncounterId, transcript: finalTranscript, noteType, noteFormat }),
+        body: JSON.stringify({
+          encounterId: currentEncounterId,
+          transcript: transcribeData.transcript,
+          noteType,
+          noteFormat,
+        }),
       });
 
-      if (!res.ok) {
+      if (!noteRes.ok) {
         toast.error("Note generation failed — transcript saved, continue in encounter");
       } else {
         toast.success("AI note generated — review and finalize in the encounter");
@@ -216,11 +213,13 @@ export function ActiveScribe() {
     }
   }
 
-  // Auto-cleanup on unmount
-  useEffect(() => { return () => cleanupAudio(); }, [cleanupAudio]);
+  const isActive = scribeState === "recording";
+  const isBusy = scribeState === "uploading" || scribeState === "generating";
 
-  const isActive = scribeState === "recording" || scribeState === "connecting";
-  const isGenerating = scribeState === "generating";
+  function formatDuration(s: number) {
+    const m = Math.floor(s / 60);
+    return `${m}:${String(s % 60).padStart(2, "0")}`;
+  }
 
   return (
     <div className="space-y-4 mb-8">
@@ -310,33 +309,35 @@ export function ActiveScribe() {
         </div>
       )}
 
-      {/* Transcript Preview Card */}
+      {/* Status Card */}
       <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${scribeState === "recording" ? "bg-red-500 animate-pulse" : scribeState === "connecting" || isGenerating ? "bg-amber-500 animate-pulse" : "bg-white/20"}`} />
-              <h3 className="text-sm font-bold text-white/80 uppercase tracking-widest">Live Transcript Preview</h3>
+              <div className={`w-2 h-2 rounded-full ${isActive ? "bg-red-500 animate-pulse" : isBusy ? "bg-amber-500 animate-pulse" : "bg-white/20"}`} />
+              <h3 className="text-sm font-bold text-white/80 uppercase tracking-widest">Live Session</h3>
             </div>
-            {scribeState === "recording" && <VolumeVisualizer stream={stream} isActive />}
+            {isActive && <VolumeVisualizer stream={streamRef.current} isActive />}
           </div>
 
-          {scribeState === "recording" && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
-              <Gauge className="w-3 h-3 text-blue-400" />
-              <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">{confidence}% Confidence</span>
+          {isActive && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+              <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider font-mono">
+                {formatDuration(durationSecs)}
+              </span>
             </div>
           )}
         </div>
 
         <div className="min-h-[140px] border-l-2 border-white/10 pl-6 py-2">
-          <p className={`text-lg font-medium leading-relaxed ${isActive ? "text-white" : isGenerating ? "text-amber-400" : "text-white/30 italic"}`}>
-            {transcript}
+          <p className={`text-lg font-medium leading-relaxed ${isActive ? "text-white" : isBusy ? "text-amber-400" : "text-white/30 italic"}`}>
+            {statusText}
           </p>
-          {(scribeState === "connecting" || isGenerating) && (
+          {isBusy && (
             <div className="flex items-center gap-2 mt-4 text-blue-400 text-sm animate-pulse">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>{isGenerating ? "Sending to Claude..." : "Establishing secure clinical channel..."}</span>
+              <span>{scribeState === "uploading" ? "Transcribing with AWS Medical AI (ca-central-1)..." : "Sending to Claude..."}</span>
             </div>
           )}
         </div>
@@ -346,7 +347,7 @@ export function ActiveScribe() {
             <AlertCircle className="w-3 h-3" />
             <span>HIA Audit Trail: Active</span>
           </div>
-          <span>TLS 1.2+ Encrypted Stream</span>
+          <span>AWS ca-central-1 · TLS 1.3</span>
         </div>
 
         <div className={`absolute -right-20 -bottom-20 w-64 h-64 bg-blue-600/5 blur-[100px] rounded-full transition-opacity duration-1000 ${isActive ? "opacity-100" : "opacity-0"}`} />
@@ -359,17 +360,15 @@ export function ActiveScribe() {
             if (scribeState === "recording") handleStopAndFinalize();
             else if (scribeState === "idle") setScribeState("modal");
           }}
-          disabled={scribeState === "connecting" || isGenerating}
-          className={`flex items-center gap-3 px-6 py-4 rounded-full font-bold shadow-2xl transition-all active:scale-95 disabled:opacity-50 ${
+          disabled={isBusy}
+          className={`flex items-center gap-3 px-6 py-4 rounded-full font-bold shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
             scribeState === "recording"
               ? "bg-red-500 hover:bg-red-400 text-white animate-pulse shadow-red-500/40"
               : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
           }`}
         >
-          {scribeState === "connecting" ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /><span>Connecting...</span></>
-          ) : isGenerating ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /><span>Generating note...</span></>
+          {isBusy ? (
+            <><Loader2 className="w-5 h-5 animate-spin" /><span>{scribeState === "uploading" ? "Transcribing..." : "Generating note..."}</span></>
           ) : scribeState === "recording" ? (
             <><Square className="w-4 h-4 fill-current" /><span>Stop & Finalize</span></>
           ) : (

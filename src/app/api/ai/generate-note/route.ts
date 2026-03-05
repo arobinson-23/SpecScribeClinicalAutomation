@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { hasPermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db/client";
 import { encryptPHI, hashSHA256 } from "@/lib/db/encryption";
 import { writeAuditLog } from "@/lib/db/audit";
@@ -30,17 +31,13 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const { userId: clerkId } = await auth();
-  if (!clerkId) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  if (!hasPermission(dbUser.role, "ai_note_gen", "execute")) {
+    return NextResponse.json(apiErr("Forbidden"), { status: 403 });
+  }
 
-  const dbUser = await prisma.user.findFirst({
-    where: { active: true },
-    select: { id: true, practiceId: true },
-  });
-  if (!dbUser) return NextResponse.json(apiErr("User records not synchronized"), { status: 403 });
-
-  const practiceId = dbUser.practiceId;
-  const userId = dbUser.id;
+  const { practiceId, id: userId } = dbUser;
 
   const body = await req.json();
   const parsed = schema.safeParse(body);

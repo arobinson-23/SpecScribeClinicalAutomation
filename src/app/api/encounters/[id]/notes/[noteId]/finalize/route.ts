@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { hasPermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db/client";
 import { encryptPHI } from "@/lib/db/encryption";
 import { writeAuditLog } from "@/lib/db/audit";
@@ -12,19 +13,14 @@ const FinalizeNoteSchema = z.object({
 type RouteParams = { params: Promise<{ id: string; noteId: string }> };
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
-  const { userId: clerkId } = await auth();
-  if (!clerkId) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
-
-  const dbUser = await prisma.user.findFirst({
-    where: { active: true }, // Simplified for demo
-    select: { id: true, practiceId: true }
-  });
-
-  if (!dbUser) return NextResponse.json({ error: "USER_NOT_FOUND" }, { status: 403 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  if (!hasPermission(dbUser.role, "own_encounters", "update")) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
 
   const { id: encounterId, noteId } = await params;
-  const practiceId = dbUser.practiceId;
-  const userId = dbUser.id;
+  const { practiceId, id: userId } = dbUser;
 
   // Validate input
   const body = await req.json().catch(() => null);

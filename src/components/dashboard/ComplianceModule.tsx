@@ -1,10 +1,20 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Shield, Lock, ShieldCheck } from 'lucide-react';
+import { Shield, Lock, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import type { ComplianceAlertSeverity } from "@prisma/client";
 
-export function ComplianceModule() {
+interface ComplianceModuleProps {
+    alerts: {
+        id: string;
+        alertType: string;
+        severity: ComplianceAlertSeverity;
+        title: string;
+    }[];
+}
+
+export function ComplianceModule({ alerts }: ComplianceModuleProps) {
     const [isLocked, setIsLocked] = useState(false);
 
     const handleSessionLock = () => {
@@ -20,6 +30,9 @@ export function ComplianceModule() {
         { label: "Encryption", status: "AES-256", icon: Lock, color: "text-emerald-400" },
         { label: "Audit Log", status: "Enabled", icon: Shield, color: "text-emerald-400" },
     ];
+
+    const criticalCount = alerts.filter((a) => a.severity === "critical").length;
+    const alertCount = alerts.length;
 
     return (
         <div className="p-6 bg-white/[0.03] border border-white/10 rounded-2xl">
@@ -45,6 +58,27 @@ export function ComplianceModule() {
                         <span className={`text-[10px] font-bold uppercase tracking-widest ${item.color}`}>{item.status}</span>
                     </div>
                 ))}
+
+                {/* Live unresolved alert count */}
+                <div className={`flex items-center justify-between p-3 border rounded-xl ${
+                    criticalCount > 0
+                        ? 'bg-red-500/5 border-red-500/20'
+                        : alertCount > 0
+                        ? 'bg-amber-500/5 border-amber-500/20'
+                        : 'bg-white/5 border-white/5'
+                }`}>
+                    <div className="flex items-center gap-3">
+                        <AlertTriangle className={`w-4 h-4 ${
+                            criticalCount > 0 ? 'text-red-400' : alertCount > 0 ? 'text-amber-400' : 'text-white/40'
+                        }`} />
+                        <span className="text-xs font-medium text-white/60">Unresolved Alerts</span>
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                        criticalCount > 0 ? 'text-red-400' : alertCount > 0 ? 'text-amber-400' : 'text-emerald-400'
+                    }`}>
+                        {alertCount === 0 ? "Clear" : alertCount}
+                    </span>
+                </div>
 
                 <div className="mt-4 p-3 bg-blue-500/5 border border-blue-500/10 rounded-xl flex items-center gap-4">
                     <div className="p-2 bg-blue-500/10 rounded-lg shrink-0">

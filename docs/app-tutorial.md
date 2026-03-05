@@ -24,7 +24,7 @@
 11. [Settings — Billing](#11-settings--billing)
 12. [Settings — Practice Configuration](#12-settings--practice-configuration)
 13. [AI System Deep Dive](#13-ai-system-deep-dive)
-14. [Security & HIPAA Architecture](#14-security--hipaa-architecture)
+14. [Security & Privacy Architecture](#14-security--privacy-architecture)
 15. [API Reference Overview](#15-api-reference-overview)
 16. [Role Permissions Reference](#16-role-permissions-reference)
 17. [Local Development Setup](#17-local-development-setup)
@@ -54,7 +54,7 @@ Patient encounter
       ↓
   Prior auth automation (where required)
       ↓
-  HIPAA compliance monitoring + audit trail
+  PIPEDA/HIA compliance monitoring + audit trail
       ↓
   Analytics: documentation time, denial rate, AI accuracy
 ```
@@ -82,7 +82,7 @@ Standard email + password login powered by **NextAuth.js**. Sessions use JWTs wi
 
 ### MFA Verification (`/mfa/verify`)
 
-**MFA is mandatory for all users** — this is a HIPAA 2025 NPRM requirement baked directly into the auth flow. After password login, users must pass TOTP (Time-Based One-Time Password) verification:
+**MFA is mandatory for all users** — this is a PIPEDA and provincial health privacy law requirement baked directly into the auth flow. After password login, users must pass TOTP (Time-Based One-Time Password) verification:
 
 1. First login: A QR code is presented. Scan it with Google Authenticator, Authy, or any TOTP app.
 2. Subsequent logins: Enter the 6-digit code from the authenticator app.
@@ -381,12 +381,12 @@ The industry average for PA turnaround is 3–5 days and 35+ staff-hours per wee
 
 ### Compliance score
 
-A percentage score calculated from automated HIPAA checks run via `src/lib/compliance/hipaa-checks.ts`. The score bar color indicates:
+A percentage score calculated from automated PIPEDA/HIA checks run via `src/lib/compliance/pipeda-checks.ts`. The score bar color indicates:
 - **Green**: ≥ 80% — compliant
 - **Yellow**: 60–79% — attention needed
 - **Red**: < 60% — critical action required
 
-### HIPAA security checks
+### PIPEDA/HIA security checks
 
 The system runs a suite of automated checks against your practice configuration. Each check shows:
 - Check name
@@ -400,7 +400,7 @@ Example checks:
 - Session idle timeout configured (≤ 15 min)
 - Audit logging active
 - PHI encryption keys rotated within 90 days
-- All users have accepted HIPAA training acknowledgment
+- All users have accepted privacy training acknowledgment
 
 ### Active alerts
 
@@ -409,9 +409,9 @@ Below the checks, active (unresolved) compliance alerts are shown. Alerts are ge
 - `warning` (yellow) — should be addressed within 30 days
 - `critical` (red) — must be addressed immediately
 
-### OIG exclusion screening
+### Provincial college good-standing screening
 
-The compliance module (`src/lib/compliance/oig-screening.ts`) screens all providers and staff against the OIG (Office of Inspector General) exclusion list. Being excluded from Medicare/Medicaid programs is a federal violation. SpecScribe automates this check so practices don't face liability from inadvertently employing or contracting with excluded individuals.
+The compliance module (`src/lib/compliance/oig-screening.ts`) supports verification of provider good-standing with provincial regulatory colleges (e.g., CPSA in Alberta, CPSO in Ontario, CPSBC in BC). Each province maintains its own public register — there is no single unified Canadian API equivalent to the US OIG LEIE. SpecScribe flags providers requiring manual verification so practices don't inadvertently employ or contract with individuals who are not in good standing.
 
 ### Payer validation
 
@@ -470,7 +470,7 @@ Only users with `admin` or `superadmin` roles can access this page. Access is en
 | Name | Decrypted first + last name, with credentials |
 | Email | Login email |
 | Role | Color-coded badge (provider/admin/biller/staff) |
-| MFA | Green ✓ or Red ✗ — shows HIPAA compliance status |
+| MFA | Green ✓ or Red ✗ — shows privacy compliance status |
 | Last login | Date of most recent authenticated session |
 | Status | Active / Inactive |
 
@@ -484,9 +484,9 @@ Only users with `admin` or `superadmin` roles can access this page. Access is en
 | staff | Grey | Scheduling and patient intake |
 | superadmin | Red | Cross-practice access (SpecScribe staff only) |
 
-### HIPAA reminder banner
+### Privacy compliance reminder banner
 
-A yellow banner reminds admins that **MFA is mandatory for all users** under the 2025 HIPAA NPRM. Users with MFA disabled also appear as a `warning` alert on the Compliance Dashboard.
+A yellow banner reminds admins that **MFA is mandatory for all users** under PIPEDA and provincial health privacy law. Users with MFA disabled also appear as a `warning` alert on the Compliance Dashboard.
 
 ### Inviting users
 
@@ -554,7 +554,7 @@ Prompts are layered — each layer adds specificity:
 
 ```
 BASE SYSTEM PROMPT
-  (clinical documentation fundamentals, HIPAA awareness, "always draft" instruction)
+  (clinical documentation fundamentals, PIPEDA/HIA privacy principles, "always draft" instruction)
   └── SPECIALTY LAYER
         (behavioral health: DSM-5 terminology, progress note conventions, CMHC standards)
         └── NOTE TYPE LAYER
@@ -606,7 +606,7 @@ The `EncounterNote.aiAcceptanceRate` field captures what fraction of each AI-gen
 
 ---
 
-## 14. Security & HIPAA Architecture
+## 14. Security & Privacy Architecture
 
 ### PHI encryption
 
@@ -621,7 +621,7 @@ Encrypted fields:
 | EncounterNote | rawTranscript, aiGeneratedNote, providerEditedNote |
 | PriorAuthRequest | clinicalSummary |
 
-The encryption key is derived from `APP_SECRET` (a 256-bit random value in `.env`). The key must be rotated every 90 days as part of HIPAA key management requirements.
+The encryption key is derived from `APP_SECRET` (a 256-bit random value in `.env`). The key must be rotated every 90 days as part of PHI key management best practice under PIPEDA security safeguards.
 
 **Use `decryptPHISafe()`** in all UI and server components — it returns `null` on failure rather than throwing. Use `decryptPHI()` (throws) only in contexts where decryption failure should halt execution.
 
@@ -636,7 +636,7 @@ Every read or write of PHI records an entry in the `AuditLog` table via `src/lib
 - `entryHash` (tamper-evident hash of the log entry)
 - `timestamp`
 
-Audit logs are retained for 10 years (exceeds the 7-year HIPAA minimum).
+Audit logs are retained for 10 years (exceeds the 7-year minimum under provincial health privacy legislation).
 
 ### Multi-tenant isolation
 
@@ -663,7 +663,7 @@ Referrer-Policy: strict-origin-when-cross-origin
 
 ### PHI minimization for AI
 
-Before sending any content to Claude, the API strips direct patient identifiers (name, DOB, SSN, MRN, address). Only clinical content (symptoms, diagnoses, treatment details) is included in prompts. This complies with the HIPAA Safe Harbor de-identification standard.
+Before sending any content to Claude, the API strips direct patient identifiers (name, DOB, SSN, MRN, address). Only clinical content (symptoms, diagnoses, treatment details) is included in prompts. This follows PHI minimization principles under PIPEDA and provincial health privacy law.
 
 ---
 
@@ -712,7 +712,7 @@ All API routes are under `/api/`. Every route:
 
 | Method | Route | Description |
 |---|---|---|
-| GET | `/api/compliance` | Run HIPAA checks + fetch active alerts |
+| GET | `/api/compliance` | Run PIPEDA/HIA checks + fetch active alerts |
 
 ### Billing
 

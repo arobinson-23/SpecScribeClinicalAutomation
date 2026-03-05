@@ -17,7 +17,7 @@
 7. [AI System](#7-ai-system)
 8. [API Design](#8-api-design)
 9. [Real-Time Audio & Transcription](#9-real-time-audio--transcription)
-10. [HIPAA & Compliance Controls](#10-hipaa--compliance-controls)
+10. [Privacy & Compliance Controls](#10-privacy--compliance-controls)
 11. [Environment Configuration](#11-environment-configuration)
 12. [Development Workflow](#12-development-workflow)
 13. [Implementation Status](#13-implementation-status)
@@ -206,7 +206,7 @@ ai_interactions    — Every Claude/Deepgram call logged (prompt hash, tokens, l
 prior_auth_requests  — PA lifecycle (not_required → submitted → approved/denied)
 claim_submissions    — Claim status and denial tracking
 payer_rules          — Payer-specific coding rules
-compliance_alerts    — HIPAA checks, OIG flags, documentation gaps
+compliance_alerts    — PIPEDA/HIA checks, provincial college flags, documentation gaps
 audit_log            — Tamper-evident log of every PHI access/mutation
 ```
 
@@ -435,7 +435,7 @@ POST /api/encounters/[id]/notes/[noteId]/finalize
 
 ---
 
-## 10. HIPAA & Compliance Controls
+## 10. Privacy & Compliance Controls
 
 ### Audit Logging
 Every PHI read or write calls `writeAuditLog()` from `src/lib/db/audit.ts`. Each entry includes:
@@ -462,8 +462,8 @@ logger.info("Note updated", { patientName: "John Smith" }); // ← forbidden
 AI-generated notes are always stored as drafts. Finalization requires an explicit provider action (`POST .../finalize`). The finalization route sets `finalizedAt` and `finalizedBy`.
 
 ### Compliance Modules
-- `src/lib/compliance/hipaa-checks.ts` — Automated HIPAA control checks
-- `src/lib/compliance/oig-screening.ts` — OIG exclusion list screening
+- `src/lib/compliance/pipeda-checks.ts` — Automated PIPEDA control checks
+- `src/lib/compliance/oig-screening.ts` — Provincial college good-standing screening
 - `src/lib/compliance/payer-validation.ts` — Pre-submission claim validation
 
 ### Canadian Compliance (PIPEDA/Alberta HIA)
@@ -563,7 +563,7 @@ chore: rotate Stripe webhook secret
 - [x] FHIR R4 client (`fhir-kit-client`)
 - [x] Stripe billing client + webhook handler
 - [x] Marketing pages (landing, pricing, demo, industry-use)
-- [x] OIG screening + HIPAA compliance check modules
+- [x] Provincial college screening + PIPEDA/HIA compliance check modules
 - [x] BullMQ + Redis job queue setup
 - [x] Winston structured logger
 
@@ -592,7 +592,7 @@ chore: rotate Stripe webhook secret
 
 2. **`APP_SECRET` rotation** — Current dev value is a placeholder string. Production requires a cryptographically random 256-bit value and a key rotation strategy for re-encrypting PHI.
 
-3. **MFA enforcement** — Clerk handles auth but TOTP MFA enrollment is not yet enforced for all users. HIPAA 2025 NPRM requires MFA with no bypass path.
+3. **MFA enforcement** — Clerk handles auth but TOTP MFA enrollment is not yet enforced for all users. PIPEDA and provincial health privacy law require MFA with no bypass path.
 
 4. **AI model version** — `src/lib/ai/anthropic.ts` hardcodes `claude-3-5-sonnet-20241022`. CLAUDE.md specifies `claude-sonnet-4-6` as the target.
 

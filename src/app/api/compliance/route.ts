@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/config";
-import { runComplianceChecks } from "@/lib/compliance/hipaa-checks";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { hasPermission } from "@/lib/auth/rbac";
+import { runComplianceChecks } from "@/lib/compliance/pipeda-checks";
 import { validateClaim } from "@/lib/compliance/payer-validation";
 import { prisma } from "@/lib/db/client";
 import { decryptPHI } from "@/lib/db/encryption";
@@ -15,10 +15,13 @@ const validateSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  if (!hasPermission(dbUser.role, "compliance", "read")) {
+    return NextResponse.json(apiErr("Forbidden"), { status: 403 });
+  }
 
-  const practiceId = (session as unknown as { practiceId: string }).practiceId;
+  const { practiceId } = dbUser;
 
   const checks = await runComplianceChecks(practiceId);
   const alerts = await prisma.complianceAlert.findMany({
@@ -31,10 +34,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  if (!hasPermission(dbUser.role, "compliance", "read")) {
+    return NextResponse.json(apiErr("Forbidden"), { status: 403 });
+  }
 
-  const practiceId = (session as unknown as { practiceId: string }).practiceId;
+  const { practiceId } = dbUser;
 
   const body = await req.json();
   const parsed = validateSchema.safeParse(body);

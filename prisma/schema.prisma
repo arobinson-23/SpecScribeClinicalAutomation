@@ -7,10 +7,396 @@ datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
   directUrl  = env("DIRECT_URL")
-  extensions = [pgvector(map: "vector"), uuidOssp(map: "uuid-ossp")]
+  extensions = [uuid_ossp(map: "uuid-ossp"), vector]
 }
 
-// ─── Enums ──────────────────────────────────────────────────────────────────
+model Practice {
+  id                    String                 @id @default(dbgenerated("uuid_generate_v4()"))
+  name                  String
+  specialty             SpecialtyType          @default(behavioral_health)
+  npi                   String                 @unique
+  tax_id                String?
+  address               Json
+  phone                 String?
+  subscriptionTier      SubscriptionTier       @default(basic)
+  stripeCustomerId      String?                @map("stripe_customer_id")
+  stripeSubId           String?                @map("stripe_sub_id")
+  fhirBaseUrl           String?                @map("fhir_base_url")
+  fhirClientId          String?                @map("fhir_client_id")
+  settings              Json                   @default("{}")
+  active                Boolean                @default(true)
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  deletedAt             DateTime?              @map("deleted_at")
+  analyticsEvents       AnalyticsEvent[]
+  auditLogs             AuditLog[]
+  claims                ClaimSubmission[]
+  complianceAlerts      ComplianceAlert[]
+  encounters            Encounter[]
+  patients              Patient[]
+  payerRules            PracticePayerRule[]
+  priorAuths            PriorAuthRequest[]
+  providerVerifications ProviderVerification[]
+  users                 User[]
+
+  @@map("practices")
+}
+
+model User {
+  id                     String                 @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId             String                 @map("practice_id")
+  email                  String                 @unique
+  passwordHash           String?                @map("password_hash")
+  role                   UserRole               @default(staff)
+  firstName              String                 @map("first_name")
+  lastName               String                 @map("last_name")
+  npi                    String?
+  credentials            String?
+  mfaSecret              String?                @map("mfa_secret")
+  mfaEnabled             Boolean                @default(false) @map("mfa_enabled")
+  mfaBackupCodes         Json                   @default("[]") @map("mfa_backup_codes")
+  passwordHistory        Json                   @default("[]") @map("password_history")
+  failedLoginCount       Int                    @default(0) @map("failed_login_count")
+  lockedUntil            DateTime?              @map("locked_until")
+  lastLoginAt            DateTime?              @map("last_login_at")
+  lastLoginIp            String?                @map("last_login_ip")
+  active                 Boolean                @default(true)
+  invitedAt              DateTime?              @map("invited_at")
+  inviteToken            String?                @map("invite_token")
+  createdAt              DateTime               @default(now()) @map("created_at")
+  updatedAt              DateTime               @updatedAt @map("updated_at")
+  deletedAt              DateTime?              @map("deleted_at")
+  auditLogs              AuditLog[]
+  encounters             Encounter[]
+  verifications          ProviderVerification[]
+  verificationsPerformed ProviderVerification[] @relation("VerifiedBy")
+  practice               Practice               @relation(fields: [practiceId], references: [id])
+
+  @@index([practiceId])
+  @@map("users")
+}
+
+model Patient {
+  id            String      @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId    String      @map("practice_id")
+  mrn           String
+  firstName     String      @map("first_name")
+  lastName      String      @map("last_name")
+  dob           String      @map("dob")
+  sex           String?
+  phone         String?
+  email         String?
+  address       String?
+  insuranceJson String?     @map("insurance_json")
+  fhirId        String?     @map("fhir_id")
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  deletedAt     DateTime?   @map("deleted_at")
+  encounters    Encounter[]
+  practice      Practice    @relation(fields: [practiceId], references: [id])
+
+  @@unique([practiceId, mrn])
+  @@index([practiceId])
+  @@map("patients")
+}
+
+model Encounter {
+  id             String             @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId     String             @map("practice_id")
+  patientId      String             @map("patient_id")
+  providerId     String             @map("provider_id")
+  encounterDate  DateTime           @map("encounter_date")
+  status         EncounterStatus    @default(not_started)
+  specialtyType  SpecialtyType      @map("specialty_type")
+  audioFileKey   String?            @map("audio_file_key")
+  audioDuration  Int?               @map("audio_duration")
+  fhirId         String?            @map("fhir_id")
+  metadata       Json               @default("{}")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+  deletedAt      DateTime?          @map("deleted_at")
+  aiInteractions AIInteraction[]
+  claims         ClaimSubmission[]
+  codes          EncounterCode[]
+  notes          EncounterNote[]
+  patient        Patient            @relation(fields: [patientId], references: [id])
+  practice       Practice           @relation(fields: [practiceId], references: [id])
+  provider       User               @relation(fields: [providerId], references: [id])
+  priorAuths     PriorAuthRequest[]
+
+  @@index([practiceId])
+  @@index([patientId])
+  @@index([providerId])
+  @@index([encounterDate])
+  @@map("encounters")
+}
+
+model EncounterNote {
+  id                 String     @id @default(dbgenerated("uuid_generate_v4()"))
+  encounterId        String     @map("encounter_id")
+  noteType           NoteType   @map("note_type")
+  noteFormat         NoteFormat @default(SOAP) @map("note_format")
+  rawTranscript      String?    @map("raw_transcript")
+  aiGeneratedNote    String?    @map("ai_generated_note")
+  providerEditedNote String?    @map("provider_edited_note")
+  aiAcceptanceRate   Float?     @map("ai_acceptance_rate")
+  wordCount          Int?       @map("word_count")
+  finalizedAt        DateTime?  @map("finalized_at")
+  finalizedBy        String?    @map("finalized_by")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+  encounter          Encounter  @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+
+  @@index([encounterId])
+  @@map("encounter_notes")
+}
+
+model EncounterCode {
+  id                String    @id @default(dbgenerated("uuid_generate_v4()"))
+  encounterId       String    @map("encounter_id")
+  codeType          CodeType  @map("code_type")
+  code              String
+  description       String?
+  modifier          String?
+  units             Int       @default(1)
+  aiConfidence      Float?    @map("ai_confidence")
+  aiRationale       String?   @map("ai_rationale")
+  reasoning         String?
+  denial_risk_score Float?
+  providerAccepted  Boolean?  @map("provider_accepted")
+  providerModified  Boolean   @default(false) @map("provider_modified")
+  acceptedAt        DateTime? @map("accepted_at")
+  acceptedBy        String?   @map("accepted_by")
+  finalCode         String?   @map("final_code")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  version           Int       @default(1)
+  supersededAt      DateTime? @map("superseded_at") @db.Timestamptz(6)
+  encounter         Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+
+  @@index([encounterId, supersededAt])
+  @@map("encounter_codes")
+}
+
+model AIInteraction {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()"))
+  encounterId     String    @map("encounter_id")
+  interactionType String    @map("interaction_type")
+  promptHash      String    @map("prompt_hash")
+  outputHash      String?   @map("output_hash")
+  modelVersion    String    @map("model_version")
+  inputTokens     Int       @map("input_tokens")
+  outputTokens    Int       @map("output_tokens")
+  latencyMs       Int       @map("latency_ms")
+  providerAction  String?   @map("provider_action")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  encounter       Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+
+  @@index([encounterId])
+  @@map("ai_interactions")
+}
+
+model SpecialtyTemplate {
+  id              String        @id @default(dbgenerated("uuid_generate_v4()"))
+  specialty       SpecialtyType
+  noteType        NoteType      @map("note_type")
+  noteFormat      NoteFormat    @map("note_format")
+  templateContent String        @map("template_content")
+  promptAddendum  String?       @map("prompt_addendum")
+  version         Int           @default(1)
+  active          Boolean       @default(true)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@unique([specialty, noteType, noteFormat, version])
+  @@map("specialty_templates")
+}
+
+model PriorAuthRequest {
+  id                String          @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId        String          @map("practice_id")
+  encounterId       String          @map("encounter_id")
+  payerId           String          @map("payer_id")
+  payerName         String          @map("payer_name")
+  procedureCodes    Json            @map("procedure_codes")
+  diagnosisCodes    Json            @map("diagnosis_codes")
+  status            PriorAuthStatus @default(not_required)
+  authNumber        String?         @map("auth_number")
+  submittedAt       DateTime?       @map("submitted_at")
+  approvedAt        DateTime?       @map("approved_at")
+  denied_at         DateTime?
+  expiresAt         DateTime?       @map("expires_at")
+  denial_reason     String?
+  clinicalSummary   String?         @map("clinical_summary")
+  supportingDocs    Json            @default("[]") @map("supporting_docs")
+  appealDeadline    DateTime?       @map("appeal_deadline")
+  appealSubmittedAt DateTime?       @map("appeal_submitted_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  encounter         Encounter       @relation(fields: [encounterId], references: [id])
+  practice          Practice        @relation(fields: [practiceId], references: [id])
+
+  @@index([practiceId])
+  @@index([encounterId])
+  @@map("prior_auth_requests")
+}
+
+model ClaimSubmission {
+  id              String      @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId      String      @map("practice_id")
+  encounterId     String      @map("encounter_id")
+  payerId         String      @map("payer_id")
+  payerName       String      @map("payer_name")
+  codesJson       Json        @map("codes_json")
+  billedAmount    Decimal     @map("billed_amount") @db.Decimal(10, 2)
+  allowedAmount   Decimal?    @map("allowed_amount") @db.Decimal(10, 2)
+  paidAmount      Decimal?    @map("paid_amount") @db.Decimal(10, 2)
+  status          ClaimStatus @default(draft)
+  submittedAt     DateTime?   @map("submitted_at")
+  paidAt          DateTime?   @map("paid_at")
+  denial_reason   String?
+  denial_code     String?
+  appealedAt      DateTime?   @map("appealed_at")
+  externalClaimId String?     @map("external_claim_id")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  encounter       Encounter   @relation(fields: [encounterId], references: [id])
+  practice        Practice    @relation(fields: [practiceId], references: [id])
+
+  @@index([practiceId])
+  @@index([encounterId])
+  @@map("claim_submissions")
+}
+
+model PayerRule {
+  id            String              @id @default(dbgenerated("uuid_generate_v4()"))
+  payerName     String              @map("payer_name")
+  payerId       String?             @map("payer_id")
+  specialty     SpecialtyType
+  ruleType      String              @map("rule_type")
+  ruleContent   Json                @map("rule_content")
+  effectiveDate DateTime            @map("effective_date")
+  endDate       DateTime?           @map("end_date")
+  active        Boolean             @default(true)
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  practiceRules PracticePayerRule[]
+
+  @@index([payerName, specialty])
+  @@map("payer_rules")
+}
+
+model PracticePayerRule {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId  String    @map("practice_id")
+  payerRuleId String    @map("payer_rule_id")
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  payerRule   PayerRule @relation(fields: [payerRuleId], references: [id])
+  practice    Practice  @relation(fields: [practiceId], references: [id])
+
+  @@unique([practiceId, payerRuleId])
+  @@map("practice_payer_rules")
+}
+
+model ComplianceAlert {
+  id          String                  @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId  String                  @map("practice_id")
+  alertType   String                  @map("alert_type")
+  severity    ComplianceAlertSeverity
+  title       String
+  description String
+  entityType  String?                 @map("entity_type")
+  entityId    String?                 @map("entity_id")
+  resolvedAt  DateTime?               @map("resolved_at")
+  resolvedBy  String?                 @map("resolved_by")
+  createdAt   DateTime                @default(now()) @map("created_at")
+  updatedAt   DateTime                @updatedAt @map("updated_at")
+  practice    Practice                @relation(fields: [practiceId], references: [id])
+
+  @@unique([practiceId, alertType])
+  @@index([practiceId])
+  @@index([resolvedAt])
+  @@map("compliance_alerts")
+}
+
+model KnowledgeChunk {
+  id         String                 @id @default(dbgenerated("uuid_generate_v4()"))
+  sourceType String                 @map("source_type")
+  sourceId   String                 @map("source_id")
+  specialty  SpecialtyType?
+  content    String
+  metadata   Json                   @default("{}")
+  embedding  Unsupported("vector")?
+  createdAt  DateTime               @default(now()) @map("created_at")
+  updatedAt  DateTime               @updatedAt @map("updated_at")
+
+  @@index([sourceType, specialty])
+  @@map("knowledge_chunks")
+}
+
+model AuditLog {
+  id             String      @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId     String      @map("practice_id")
+  userId         String?     @map("user_id")
+  userRole       String?     @map("user_role")
+  sessionId      String?     @map("session_id")
+  action         AuditAction
+  resource       String
+  resourceId     String?     @map("resource_id")
+  ipAddress      String?     @map("ip_address")
+  userAgent      String?     @map("user_agent")
+  outcome        String      @default("success")
+  errorCode      String?     @map("error_code")
+  fieldsAccessed Json?       @map("fields_accessed")
+  fieldsChanged  Json?       @map("fields_changed")
+  metadata       Json        @default("{}")
+  previousHash   String?     @map("previous_hash")
+  entryHash      String?     @map("entry_hash")
+  timestamp      DateTime    @default(now())
+  practice       Practice    @relation(fields: [practiceId], references: [id])
+  user           User?       @relation(fields: [userId], references: [id])
+
+  @@index([practiceId, timestamp])
+  @@index([userId])
+  @@map("audit_log")
+}
+
+model AnalyticsEvent {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId   String   @map("practice_id")
+  eventType    String   @map("event_type")
+  metadataJson Json     @default("{}") @map("metadata_json")
+  timestamp    DateTime @default(now())
+  practice     Practice @relation(fields: [practiceId], references: [id])
+
+  @@index([practiceId, eventType, timestamp])
+  @@map("analytics_events")
+}
+
+model ProviderVerification {
+  id                 String   @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId         String   @map("practice_id")
+  userId             String   @map("user_id")
+  verifiedById       String   @map("verified_by_id")
+  province           String
+  registrationNumber String   @map("registration_number")
+  college            String
+  inGoodStanding     Boolean  @map("in_good_standing")
+  verifiedAt         DateTime @map("verified_at")
+  expiresAt          DateTime @map("expires_at")
+  notes              String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  practice           Practice @relation(fields: [practiceId], references: [id])
+  user               User     @relation(fields: [userId], references: [id])
+  verifiedBy         User     @relation("VerifiedBy", fields: [verifiedById], references: [id])
+
+  @@index([practiceId])
+  @@index([userId])
+  @@map("provider_verifications")
+}
 
 enum UserRole {
   provider
@@ -55,8 +441,9 @@ enum NoteFormat {
 }
 
 enum CodeType {
-  AHCIP    // Alberta Health Care Insurance Plan service codes
-  ICD10_CA // Canadian ICD-10 diagnosis codes
+  CPT
+  ICD10
+  HCPCS
 }
 
 enum ClaimStatus {
@@ -64,7 +451,7 @@ enum ClaimStatus {
   submitted
   pending
   paid
-  rejected
+  denied
   appealed
   written_off
 }
@@ -75,7 +462,7 @@ enum PriorAuthStatus {
   submitted
   under_review
   approved
-  rejected
+  denied
   appealed
   expired
 }
@@ -106,422 +493,4 @@ enum SubscriptionTier {
   basic
   professional
   enterprise
-}
-
-// ─── Core Entities ──────────────────────────────────────────────────────────
-
-model Practice {
-  id               String           @id @default(dbgenerated("uuid_generate_v4()"))
-  name                        String
-  specialty                   SpecialtyType    @default(behavioral_health)
-  provincialRegistrationNumber String          @unique @map("provincial_registration_number") // e.g. CPSA # in Alberta
-  businessNumber              String?          @map("business_number") // CRA Business Number (9-digit BN)
-  address          Json             // { street, city, province, postalCode } — Canadian format
-  phone            String?
-  subscriptionTier SubscriptionTier @default(basic)
-  stripeCustomerId String?          @map("stripe_customer_id")
-  stripeSubId      String?          @map("stripe_sub_id")
-  fhirBaseUrl      String?          @map("fhir_base_url")
-  fhirClientId     String?          @map("fhir_client_id")
-  settings         Json             @default("{}") // note prefs, coding prefs, payer list
-  active           Boolean          @default(true)
-  createdAt        DateTime         @default(now()) @map("created_at")
-  updatedAt        DateTime         @updatedAt @map("updated_at")
-  deletedAt        DateTime?        @map("deleted_at")
-
-  users            User[]
-  patients         Patient[]
-  encounters       Encounter[]
-  priorAuths       PriorAuthRequest[]
-  claims           ClaimSubmission[]
-  complianceAlerts ComplianceAlert[]
-  payerRules       PracticePayerRule[]
-  auditLogs        AuditLog[]
-  analyticsEvents  AnalyticsEvent[]
-  migrationLogs    MigrationLog[]
-
-  @@map("practices")
-}
-
-model User {
-  id                 String    @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId         String    @map("practice_id")
-  email              String    @unique
-  passwordHash       String    @map("password_hash")
-  role               UserRole  @default(staff)
-  firstName          String    @map("first_name") // encrypted
-  lastName           String    @map("last_name")  // encrypted
-  provincialRegistrationNumber String? @map("provincial_registration_number") // e.g. CPSA registration number
-  credentials        String?   // MD, DO, LCSW, etc.
-  mfaSecret          String?   @map("mfa_secret")  // encrypted TOTP secret
-  mfaEnabled         Boolean   @default(false) @map("mfa_enabled")
-  mfaBackupCodes     Json      @default("[]") @map("mfa_backup_codes") // hashed
-  passwordHistory    Json      @default("[]") @map("password_history") // hashed, last 12
-  failedLoginCount   Int       @default(0) @map("failed_login_count")
-  lockedUntil        DateTime? @map("locked_until")
-  lastLoginAt        DateTime? @map("last_login_at")
-  lastLoginIp        String?   @map("last_login_ip")
-  active             Boolean   @default(true)
-  invitedAt          DateTime? @map("invited_at")
-  inviteToken        String?   @map("invite_token")
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
-  deletedAt          DateTime? @map("deleted_at")
-
-  practice           Practice  @relation(fields: [practiceId], references: [id])
-  sessions           Session[]
-  encounters         Encounter[]
-  auditLogs          AuditLog[]
-
-  @@index([practiceId])
-  @@map("users")
-}
-
-model Session {
-  id           String   @id @default(dbgenerated("uuid_generate_v4()"))
-  userId       String   @map("user_id")
-  sessionToken String   @unique @map("session_token")
-  mfaVerified  Boolean  @default(false) @map("mfa_verified")
-  deviceHash   String?  @map("device_hash")
-  ipAddress    String?  @map("ip_address")
-  userAgent    String?  @map("user_agent")
-  lastActivity DateTime @default(now()) @map("last_activity")
-  expiresAt    DateTime @map("expires_at")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([sessionToken])
-  @@map("sessions")
-}
-
-model Patient {
-  id           String    @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId   String    @map("practice_id")
-  mrn          String    // Medical Record Number (practice-scoped)
-  firstName    String    @map("first_name")  // encrypted
-  lastName     String    @map("last_name")   // encrypted
-  dob          String    @map("dob")         // encrypted YYYY-MM-DD
-  sex          String?
-  phone        String?   // encrypted
-  email        String?   // encrypted
-  address      String?   // encrypted JSON
-  insuranceJson String?  @map("insurance_json") // encrypted
-  fhirId       String?   @map("fhir_id")
-  metadata     Json      @default("{}") // { legacyId, importedAt, importBatchId }
-  active       Boolean   @default(true)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
-
-  practice   Practice    @relation(fields: [practiceId], references: [id])
-  encounters Encounter[]
-
-  @@unique([practiceId, mrn])
-  @@index([practiceId])
-  @@map("patients")
-}
-
-model Encounter {
-  id            String          @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId    String          @map("practice_id")
-  patientId     String          @map("patient_id")
-  providerId    String          @map("provider_id")
-  encounterDate DateTime        @map("encounter_date")
-  status        EncounterStatus @default(not_started)
-  specialtyType SpecialtyType   @map("specialty_type")
-  audioFileKey  String?         @map("audio_file_key") // S3 key
-  audioDuration Int?            @map("audio_duration")  // seconds
-  fhirId        String?         @map("fhir_id")
-  metadata      Json            @default("{}")
-  createdAt     DateTime        @default(now()) @map("created_at")
-  updatedAt     DateTime        @updatedAt @map("updated_at")
-  deletedAt     DateTime?       @map("deleted_at")
-
-  practice       Practice          @relation(fields: [practiceId], references: [id])
-  patient        Patient           @relation(fields: [patientId], references: [id])
-  provider       User              @relation(fields: [providerId], references: [id])
-  notes          EncounterNote[]
-  codes          EncounterCode[]
-  aiInteractions AIInteraction[]
-  priorAuths     PriorAuthRequest[]
-  claims         ClaimSubmission[]
-
-  @@index([practiceId])
-  @@index([patientId])
-  @@index([providerId])
-  @@index([encounterDate])
-  @@map("encounters")
-}
-
-model EncounterNote {
-  id                  String     @id @default(dbgenerated("uuid_generate_v4()"))
-  encounterId         String     @map("encounter_id")
-  noteType            NoteType   @map("note_type")
-  noteFormat          NoteFormat @default(SOAP) @map("note_format")
-  rawTranscript       String?    @map("raw_transcript")       // encrypted
-  aiGeneratedNote     String?    @map("ai_generated_note")    // encrypted
-  providerEditedNote  String?    @map("provider_edited_note") // encrypted
-  aiAcceptanceRate    Float?     @map("ai_acceptance_rate")   // 0.0–1.0
-  wordCount           Int?       @map("word_count")
-  finalizedAt         DateTime?  @map("finalized_at")
-  finalizedBy         String?    @map("finalized_by")
-  createdAt           DateTime   @default(now()) @map("created_at")
-  updatedAt           DateTime   @updatedAt @map("updated_at")
-
-  encounter Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
-
-  @@index([encounterId])
-  @@map("encounter_notes")
-}
-
-model EncounterCode {
-  id               String   @id @default(dbgenerated("uuid_generate_v4()"))
-  encounterId      String   @map("encounter_id")
-  codeType         CodeType @map("code_type")
-  code             String
-  description      String?
-  modifier         String?
-  units            Int      @default(1)
-  aiConfidence     Float?   @map("ai_confidence")   // 0.0–1.0
-  aiRationale      String?  @map("ai_rationale")
-  reasoning        String?  // formatted reasoning for UI display
-  rejectionRiskScore Float? @map("rejection_risk_score") // 0.0–1.0
-  providerAccepted Boolean? @map("provider_accepted")
-  providerModified Boolean  @default(false) @map("provider_modified")
-  acceptedAt       DateTime? @map("accepted_at")
-  acceptedBy       String?  @map("accepted_by")
-  finalCode        String?  @map("final_code")       // what provider actually used
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-
-  encounter Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
-
-  @@index([encounterId])
-  @@map("encounter_codes")
-}
-
-model AIInteraction {
-  id            String   @id @default(dbgenerated("uuid_generate_v4()"))
-  encounterId   String   @map("encounter_id")
-  interactionType String  @map("interaction_type") // note_generation | coding | prior_auth
-  promptHash    String   @map("prompt_hash")       // SHA-256 (not the prompt itself)
-  outputHash    String?  @map("output_hash")       // SHA-256 of output
-  modelVersion  String   @map("model_version")
-  inputTokens   Int      @map("input_tokens")
-  outputTokens  Int      @map("output_tokens")
-  latencyMs     Int      @map("latency_ms")
-  providerAction String? @map("provider_action")   // accepted | modified | rejected
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  encounter Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
-
-  @@index([encounterId])
-  @@map("ai_interactions")
-}
-
-model SpecialtyTemplate {
-  id              String        @id @default(dbgenerated("uuid_generate_v4()"))
-  specialty       SpecialtyType
-  noteType        NoteType      @map("note_type")
-  noteFormat      NoteFormat    @map("note_format")
-  templateContent String        @map("template_content")
-  promptAddendum  String?       @map("prompt_addendum")
-  version         Int           @default(1)
-  active          Boolean       @default(true)
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-
-  @@unique([specialty, noteType, noteFormat, version])
-  @@map("specialty_templates")
-}
-
-model PriorAuthRequest {
-  id                    String          @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId            String          @map("practice_id")
-  encounterId           String          @map("encounter_id")
-  payerId               String          @map("payer_id")
-  payerName             String          @map("payer_name")
-  procedureCodes        Json            @map("procedure_codes") // AHCIP service codes requiring PA
-  diagnosisCodes        Json            @map("diagnosis_codes")
-  status                PriorAuthStatus @default(not_required)
-  authNumber            String?         @map("auth_number")
-  submittedAt           DateTime?       @map("submitted_at")
-  approvedAt            DateTime?       @map("approved_at")
-  rejectedAt            DateTime?       @map("rejected_at")
-  expiresAt             DateTime?       @map("expires_at")
-  rejectionReason       String?         @map("rejection_reason")
-  clinicalSummary       String?         @map("clinical_summary") // encrypted, AI-generated
-  supportingDocs        Json            @default("[]") @map("supporting_docs") // S3 keys
-  appealDeadline        DateTime?       @map("appeal_deadline")
-  appealSubmittedAt     DateTime?       @map("appeal_submitted_at")
-  createdAt             DateTime        @default(now()) @map("created_at")
-  updatedAt             DateTime        @updatedAt @map("updated_at")
-
-  practice  Practice  @relation(fields: [practiceId], references: [id])
-  encounter Encounter @relation(fields: [encounterId], references: [id])
-
-  @@index([practiceId])
-  @@index([encounterId])
-  @@map("prior_auth_requests")
-}
-
-model ClaimSubmission {
-  id             String      @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId     String      @map("practice_id")
-  encounterId    String      @map("encounter_id")
-  payerId        String      @map("payer_id")
-  payerName      String      @map("payer_name")
-  codesJson      Json        @map("codes_json")
-  billedAmount   Decimal     @map("billed_amount") @db.Decimal(10, 2)
-  allowedAmount  Decimal?    @map("allowed_amount") @db.Decimal(10, 2)
-  paidAmount     Decimal?    @map("paid_amount") @db.Decimal(10, 2)
-  status         ClaimStatus @default(draft)
-  submittedAt    DateTime?   @map("submitted_at")
-  paidAt         DateTime?   @map("paid_at")
-  rejectionReason String?    @map("rejection_reason")
-  rejectionCode   String?    @map("rejection_code")
-  appealedAt     DateTime?   @map("appealed_at")
-  externalClaimId String?    @map("external_claim_id")
-  createdAt      DateTime    @default(now()) @map("created_at")
-  updatedAt      DateTime    @updatedAt @map("updated_at")
-
-  practice  Practice  @relation(fields: [practiceId], references: [id])
-  encounter Encounter @relation(fields: [encounterId], references: [id])
-
-  @@index([practiceId])
-  @@index([encounterId])
-  @@map("claim_submissions")
-}
-
-model PayerRule {
-  id            String        @id @default(dbgenerated("uuid_generate_v4()"))
-  payerName     String        @map("payer_name")
-  payerId       String?       @map("payer_id")
-  specialty     SpecialtyType
-  ruleType      String        @map("rule_type") // modifier | medical_necessity | prior_auth | exclusion
-  ruleContent   Json          @map("rule_content")
-  effectiveDate DateTime      @map("effective_date")
-  endDate       DateTime?     @map("end_date")
-  active        Boolean       @default(true)
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-
-  practiceRules PracticePayerRule[]
-
-  @@index([payerName, specialty])
-  @@map("payer_rules")
-}
-
-model PracticePayerRule {
-  id         String   @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId String   @map("practice_id")
-  payerRuleId String  @map("payer_rule_id")
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  practice  Practice  @relation(fields: [practiceId], references: [id])
-  payerRule PayerRule @relation(fields: [payerRuleId], references: [id])
-
-  @@unique([practiceId, payerRuleId])
-  @@map("practice_payer_rules")
-}
-
-model ComplianceAlert {
-  id          String                  @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId  String                  @map("practice_id")
-  alertType   String                  @map("alert_type")
-  severity    ComplianceAlertSeverity
-  title       String
-  description String
-  entityType  String?                 @map("entity_type")
-  entityId    String?                 @map("entity_id")
-  resolvedAt  DateTime?               @map("resolved_at")
-  resolvedBy  String?                 @map("resolved_by")
-  createdAt   DateTime                @default(now()) @map("created_at")
-  updatedAt   DateTime                @updatedAt @map("updated_at")
-
-  practice Practice @relation(fields: [practiceId], references: [id])
-
-  @@index([practiceId])
-  @@index([resolvedAt])
-  @@map("compliance_alerts")
-}
-
-model KnowledgeChunk {
-  id          String                 @id @default(dbgenerated("uuid_generate_v4()"))
-  sourceType  String                 @map("source_type") // ahcip | icd10_ca | payer_rule | guideline
-  sourceId    String                 @map("source_id")
-  specialty   SpecialtyType?
-  content     String
-  metadata    Json                   @default("{}")
-  embedding   Unsupported("vector(1536)")? // pgvector
-  createdAt   DateTime               @default(now()) @map("created_at")
-  updatedAt   DateTime               @updatedAt @map("updated_at")
-
-  @@index([sourceType, specialty])
-  @@map("knowledge_chunks")
-}
-
-model AuditLog {
-  id           String      @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId   String      @map("practice_id")
-  userId       String?     @map("user_id")
-  userRole     String?     @map("user_role")
-  sessionId    String?     @map("session_id")
-  action       AuditAction
-  resource     String
-  resourceId   String?     @map("resource_id")
-  ipAddress    String?     @map("ip_address")
-  userAgent    String?     @map("user_agent")
-  outcome      String      @default("success") // success | failure | denied
-  errorCode    String?     @map("error_code")
-  fieldsAccessed Json?     @map("fields_accessed")
-  fieldsChanged  Json?     @map("fields_changed")
-  metadata     Json        @default("{}")
-  previousHash String?     @map("previous_hash")
-  entryHash    String?     @map("entry_hash")
-  timestamp    DateTime    @default(now())
-
-  practice Practice @relation(fields: [practiceId], references: [id])
-  user     User?    @relation(fields: [userId], references: [id])
-
-  @@index([practiceId, timestamp])
-  @@index([userId])
-  @@map("audit_log")
-}
-
-model AnalyticsEvent {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId  String   @map("practice_id")
-  eventType   String   @map("event_type")
-  metadataJson Json    @default("{}") @map("metadata_json")
-  timestamp   DateTime @default(now())
-
-  practice Practice @relation(fields: [practiceId], references: [id])
-
-  @@index([practiceId, eventType, timestamp])
-  @@map("analytics_events")
-}
-
-// ─── Migration / HIA Compliance ─────────────────────────────────────────────
-
-model MigrationLog {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId  String   @map("practice_id")
-  adminId     String   @map("admin_id")        // DB user ID of the admin who ran import
-  action      String   // 'PATIENT_IMPORT' | 'NOTE_IMPORT' | 'VALIDATION_SIGN_OFF'
-  recordId    String?  @map("record_id")        // patient.id or S3 object key
-  recordType  String   @map("record_type")      // 'patient' | 'clinical_note'
-  status      String   // 'success' | 'error' | 'skipped' | 'duplicate'
-  sourceFile  String?  @map("source_file")      // original filename, never PHI values
-  detail      Json     @default("{}")            // error detail or safe metadata — no PHI
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  practice Practice @relation(fields: [practiceId], references: [id])
-
-  @@index([practiceId, createdAt])
-  @@index([adminId])
-  @@map("migration_logs")
 }

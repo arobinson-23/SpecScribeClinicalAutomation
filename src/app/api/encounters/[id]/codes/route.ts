@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/config";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { hasPermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db/client";
 import { writeAuditLog } from "@/lib/db/audit";
 import { z } from "zod";
@@ -15,11 +15,14 @@ type RouteParams = { params: Promise<{ id: string }> };
 
 // GET /api/encounters/[id]/codes — list suggested codes for an encounter
 export async function GET(_req: NextRequest, { params }: RouteParams) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  if (!hasPermission(dbUser.role, "coding", "read")) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
 
   const { id: encounterId } = await params;
-  const practiceId = (session as unknown as { practiceId: string }).practiceId;
+  const { practiceId } = dbUser;
 
   const encounter = await prisma.encounter.findFirst({
     where: { id: encounterId, practiceId, deletedAt: null },
@@ -28,7 +31,9 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
   if (!encounter) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
 
   const codes = await prisma.encounterCode.findMany({
-    where: { encounterId },
+    // supersededAt: null → only the active batch. Historical batches are
+    // retained in the DB for audit/analytics but not shown to the provider.
+    where: { encounterId, supersededAt: null },
     orderBy: [{ codeType: "asc" }, { aiConfidence: "desc" }],
     select: {
       id: true,
@@ -40,6 +45,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       aiRationale: true,
       providerAccepted: true,
       rejectionRiskScore: true,
+      version: true,
     },
   });
 
@@ -48,12 +54,14 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
 // PATCH /api/encounters/[id]/codes — accept or reject a suggested code
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  if (!hasPermission(dbUser.role, "coding", "update")) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
 
   const { id: encounterId } = await params;
-  const practiceId = (session as unknown as { practiceId: string }).practiceId;
-  const userId = (session as unknown as { id: string }).id;
+  const { practiceId, id: userId } = dbUser;
 
   const body = await req.json().catch(() => null);
   const parsed = AcceptCodeSchema.safeParse(body);
@@ -68,9 +76,10 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   });
   if (!encounter) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
 
-  // Find the specific code record
+  // Find the specific code record — only match active (non-superseded) codes.
+  // A provider cannot accept/reject a historical suggestion from a prior AI run.
   const existingCode = await prisma.encounterCode.findFirst({
-    where: { encounterId, code: parsed.data.code },
+    where: { encounterId, code: parsed.data.code, supersededAt: null },
   });
   if (!existingCode) return NextResponse.json({ error: "CODE_NOT_FOUND" }, { status: 404 });
 

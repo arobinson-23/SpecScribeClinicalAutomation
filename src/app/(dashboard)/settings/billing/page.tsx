@@ -1,12 +1,11 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/config";
+import { getDbUser } from "@/lib/auth/get-db-user";
 import { prisma } from "@/lib/db/client";
 import { createBillingPortalSession } from "@/lib/billing/stripe";
 import { redirect } from "next/navigation";
 
 export default async function BillingSettingsPage() {
-  const session = await getServerSession(authOptions);
-  const practiceId = (session as unknown as { practiceId: string })?.practiceId;
+  const dbUser = await getDbUser();
+  const practiceId = dbUser?.practiceId;
 
   const practice = await prisma.practice.findUnique({
     where: { id: practiceId },
@@ -48,7 +47,7 @@ export default async function BillingSettingsPage() {
         "Custom specialty templates",
         "HL7v2 integration",
         "SOC 2 reports on request",
-        "BAA with 24h SLA",
+        "DPA with 24h SLA",
       ],
     },
   };

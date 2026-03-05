@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/config";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { hasPermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db/client";
 import { decryptPHI, hashSHA256 } from "@/lib/db/encryption";
 import { writeAuditLog } from "@/lib/db/audit";
@@ -16,11 +16,13 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  if (!hasPermission(dbUser.role, "coding", "create")) {
+    return NextResponse.json(apiErr("Forbidden"), { status: 403 });
+  }
 
-  const practiceId = (session as unknown as { practiceId: string }).practiceId;
-  const userId = (session as unknown as { userId: string }).userId;
+  const { practiceId, id: userId } = dbUser;
 
   const body = await req.json();
   const parsed = schema.safeParse(body);
@@ -54,8 +56,22 @@ export async function POST(req: NextRequest) {
     payerRules,
   });
 
-  // Save suggestions to DB
-  await prisma.encounterCode.deleteMany({ where: { encounterId, providerAccepted: null } });
+  // Determine the next version number across all batches for this encounter
+  // (includes superseded rows so the counter is monotonically increasing).
+  const { _max } = await prisma.encounterCode.aggregate({
+    where: { encounterId },
+    _max: { version: true },
+  });
+  const nextVersion = (_max.version ?? 0) + 1;
+
+  // Supersede pending AI suggestions rather than deleting them.
+  // Only un-reviewed rows (providerAccepted IS NULL) are superseded;
+  // provider decisions (accepted/rejected) are permanent and never removed.
+  const supersededAt = new Date();
+  await prisma.encounterCode.updateMany({
+    where: { encounterId, providerAccepted: null, supersededAt: null },
+    data: { supersededAt },
+  });
 
   await prisma.encounterCode.createMany({
     data: result.suggestions.map((s) => ({
@@ -67,6 +83,7 @@ export async function POST(req: NextRequest) {
       units: s.units,
       aiConfidence: s.confidence,
       aiRationale: s.rationale,
+      version: nextVersion,
     })),
   });
 

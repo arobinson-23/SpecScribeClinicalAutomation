@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { hasPermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db/client";
 import { writeAuditLog } from "@/lib/db/audit";
 import { decryptPHISafe } from "@/lib/db/encryption";
@@ -17,18 +18,13 @@ const createEncounterSchema = z.object({
 }).refine((d) => d.patientId || d.patientMrn, { message: "patientId or patientMrn required" });
 
 export async function GET(req: NextRequest) {
-  const { userId: clerkId } = await auth();
-  if (!clerkId) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  if (!hasPermission(dbUser.role, "own_encounters", "read")) {
+    return NextResponse.json(apiErr("Forbidden"), { status: 403 });
+  }
 
-  const dbUser = await prisma.user.findFirst({
-    where: { active: true }, // Simplified for demo, should match clerkId
-    select: { id: true, practiceId: true }
-  });
-
-  if (!dbUser) return NextResponse.json(apiErr("User records not synchronized"), { status: 403 });
-
-  const practiceId = dbUser.practiceId;
-  const userId = dbUser.id;
+  const { practiceId, id: userId } = dbUser;
 
   const { searchParams } = new URL(req.url);
   const cursor = searchParams.get("cursor");
@@ -88,18 +84,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { userId: clerkId } = await auth();
-  if (!clerkId) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  if (!hasPermission(dbUser.role, "own_encounters", "create")) {
+    return NextResponse.json(apiErr("Forbidden"), { status: 403 });
+  }
 
-  const dbUser = await prisma.user.findFirst({
-    where: { active: true }, // Simplified for demo
-    select: { id: true, practiceId: true }
-  });
-
-  if (!dbUser) return NextResponse.json(apiErr("Account not found"), { status: 403 });
-
-  const practiceId = dbUser.practiceId;
-  const userId = dbUser.id;
+  const { practiceId, id: userId } = dbUser;
 
   const body = await req.json();
   const parsed = createEncounterSchema.safeParse(body);

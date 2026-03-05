@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/config";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { hasPermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db/client";
-import { transcribeAudio } from "@/lib/ai/transcription";
+import { transcribeAudioFromS3 } from "@/lib/ai/transcription";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiOk, apiErr } from "@/types/api";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
@@ -20,11 +20,13 @@ const s3 = new S3Client({
 });
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  if (!hasPermission(dbUser.role, "ai_note_gen", "execute")) {
+    return NextResponse.json(apiErr("Forbidden"), { status: 403 });
+  }
 
-  const practiceId = (session as unknown as { practiceId: string }).practiceId;
-  const userId = (session as unknown as { userId: string }).userId;
+  const { practiceId, id: userId } = dbUser;
 
   const formData = await req.formData();
   const audioFile = formData.get("audio") as File | null;
@@ -66,8 +68,8 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Transcribe
-  const result = await transcribeAudio(buffer, audioFile.type, encounterId);
+  // Transcribe via AWS Transcribe Medical (ca-central-1 — HIA / PIPEDA Canadian data residency)
+  const result = await transcribeAudioFromS3(audioKey, encounterId);
 
   await writeAuditLog({
     practiceId,

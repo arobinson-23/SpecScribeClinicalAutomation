@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/db/client";
 import type { ComplianceAlertSeverity } from "@prisma/client";
+import { getPracticeVerificationStatus } from "@/lib/compliance/oig-screening";
 
-interface ComplianceCheckResult {
+export interface ComplianceCheckResult {
   checkName: string;
+  /** Stable identifier used as the ComplianceAlert.alertType upsert key */
+  alertType: string;
   passed: boolean;
   severity: ComplianceAlertSeverity;
   description: string;
@@ -29,6 +32,7 @@ export async function runComplianceChecks(practiceId: string): Promise<Complianc
 
   results.push({
     checkName: "Unsigned Notes",
+    alertType: "pipeda_unsigned_notes",
     passed: unsignedNotes === 0,
     severity: unsignedNotes > 0 ? "warning" : "info",
     description: unsignedNotes > 0
@@ -44,6 +48,7 @@ export async function runComplianceChecks(practiceId: string): Promise<Complianc
 
   results.push({
     checkName: "MFA Enforcement",
+    alertType: "pipeda_mfa_enforcement",
     passed: noMFAUsers === 0,
     severity: noMFAUsers > 0 ? "critical" : "info",
     description: noMFAUsers > 0
@@ -64,6 +69,7 @@ export async function runComplianceChecks(practiceId: string): Promise<Complianc
 
   results.push({
     checkName: "Critical Alert Resolution",
+    alertType: "pipeda_critical_alerts_overdue",
     passed: unresolvedCritical === 0,
     severity: unresolvedCritical > 0 ? "critical" : "info",
     description: unresolvedCritical > 0
@@ -82,6 +88,7 @@ export async function runComplianceChecks(practiceId: string): Promise<Complianc
 
   results.push({
     checkName: "Audit Logging Active",
+    alertType: "pipeda_audit_logging_inactive",
     passed: recentLogs > 0,
     severity: recentLogs === 0 ? "critical" : "info",
     description: recentLogs > 0
@@ -90,23 +97,45 @@ export async function runComplianceChecks(practiceId: string): Promise<Complianc
     remediation: "Verify audit logging service is running correctly",
   });
 
-  // Persist any failed checks as compliance alerts
+  // ─── Provider College Verification ──────────────────────────────────────────
+  const verificationStatus = await getPracticeVerificationStatus(practiceId);
+  const hasProblems =
+    verificationStatus.notInGoodStanding > 0 ||
+    verificationStatus.expired > 0 ||
+    verificationStatus.neverChecked > 0;
+
+  results.push({
+    checkName: "Provider College Standing",
+    alertType: "pipeda_provider_college_standing",
+    passed: !hasProblems,
+    severity: (verificationStatus.notInGoodStanding > 0
+      ? "critical"
+      : verificationStatus.expired > 0 || verificationStatus.neverChecked > 0
+      ? "warning"
+      : "info") as ComplianceAlertSeverity,
+    description: hasProblems
+      ? `${verificationStatus.notInGoodStanding} not in good standing · ${verificationStatus.expired} expired · ${verificationStatus.neverChecked} never verified`
+      : `All ${verificationStatus.verified} active providers verified with provincial college`,
+    remediation:
+      "Verify all providers in good standing at their provincial college public register. Go to Settings → Users → Provider Verification.",
+  });
+
+  // Persist any failed checks as compliance alerts, keyed by practiceId + alertType
   for (const result of results) {
     if (!result.passed) {
       await prisma.complianceAlert.upsert({
         where: {
-          // synthetic unique key — in real app you'd track by type
-          id: `${practiceId}-${result.checkName.replace(/\s/g, "-").toLowerCase()}`,
+          practiceId_alertType: { practiceId, alertType: result.alertType },
         },
         create: {
-          id: `${practiceId}-${result.checkName.replace(/\s/g, "-").toLowerCase()}`,
           practice: { connect: { id: practiceId } },
-          alertType: "compliance_check",
+          alertType: result.alertType,
           severity: result.severity,
           title: result.checkName,
           description: result.description,
         },
         update: {
+          severity: result.severity,
           description: result.description,
           updatedAt: new Date(),
         },

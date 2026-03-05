@@ -40,19 +40,19 @@ export default function PricingPage() {
             <section className="py-16 sm:py-24 px-6 sm:px-8 bg-slate-900 overflow-hidden relative">
                 <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #3b82f6 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
-                <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12 relative">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 relative">
                     {[
                         { icon: Clock, title: "12 Hours Saved", desc: "Average weekly time saved on charting for every physician in the practice.", stat: "75%", statLabel: "Time Reduction" },
                         { icon: TrendingUp, title: "Higher Billing Accuracy", desc: "AI-suggested billing codes prevent under-billing in 28% of encounters.", stat: "$1.4k", statLabel: "Monthly Revenue Lift" },
                         { icon: ShieldCheck, title: "Bulletproof Compliance", desc: "Automated audit logs and PIPEDA/HIA compliance built-in from day one.", stat: "0", statLabel: "Security Breaches" },
                     ].map((item, idx) => (
-                        <div key={idx} className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
-                            <div className="w-14 h-14 bg-blue-600/20 rounded-2xl flex items-center justify-center mb-6">
-                                <item.icon className="w-7 h-7 text-blue-400" />
+                        <div key={idx} className="bg-white/5 border border-white/10 rounded-3xl p-5 md:p-7 backdrop-blur-sm">
+                            <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-600/20 rounded-2xl flex items-center justify-center mb-4 md:mb-6">
+                                <item.icon className="w-6 h-6 md:w-7 md:h-7 text-blue-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                            <p className="text-white/40 text-sm leading-relaxed mb-8">{item.desc}</p>
-                            <div className="pt-6 border-t border-white/5">
+                            <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">{item.title}</h3>
+                            <p className="text-white/40 text-sm leading-relaxed mb-6 md:mb-8">{item.desc}</p>
+                            <div className="pt-4 md:pt-6 border-t border-white/5">
                                 <div className="text-3xl font-black text-blue-400">{item.stat}</div>
                                 <div className="text-[10px] uppercase font-bold tracking-widest text-white/30 mt-1">{item.statLabel}</div>
                             </div>
@@ -62,7 +62,7 @@ export default function PricingPage() {
             </section>
 
             {/* ── COMPARISON FUNNEL: WHY SPEC SCRIBE? ── */}
-            <section className="py-16 sm:py-32 px-6 sm:px-8 bg-white" id="comparison">
+            <section className="py-16 md:py-20 lg:py-28 px-6 sm:px-8 bg-white" id="comparison">
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-10 sm:mb-20">
                         <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">Choose the smarter path.</h2>
@@ -105,10 +105,10 @@ export default function PricingPage() {
             {/* ── PRICING TIERS ── */}
             <section className="py-16 sm:py-24 px-6 sm:px-8 bg-slate-50">
                 <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-7 items-start">
 
                         {/* Tier: Starter */}
-                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 sm:p-10 hover:border-blue-600/20 transition-all flex flex-col">
+                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 md:p-7 lg:p-9 hover:border-blue-600/20 transition-all flex flex-col">
                             <div className="mb-8">
                                 <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Foundation</div>
                                 <h3 className="text-2xl font-black text-slate-900 mb-4">Solo Trial</h3>
@@ -138,7 +138,7 @@ export default function PricingPage() {
                         </div>
 
                         {/* Tier: Professional (MOST POPULAR) */}
-                        <div className="bg-slate-900 border-2 border-blue-600/50 rounded-[2.5rem] p-8 sm:p-10 shadow-2xl shadow-blue-600/10 relative md:scale-105 md:z-10 flex flex-col">
+                        <div className="bg-slate-900 border-2 border-blue-600/50 rounded-[2.5rem] p-6 md:p-7 lg:p-9 shadow-2xl shadow-blue-600/10 relative lg:scale-105 lg:z-10 flex flex-col">
                             <div className="absolute top-0 right-10 -translate-y-1/2 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
                                 Most Popular
                             </div>
@@ -175,7 +175,7 @@ export default function PricingPage() {
                         </div>
 
                         {/* Tier: Practice */}
-                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 sm:p-10 hover:border-blue-600/20 transition-all flex flex-col">
+                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 md:p-7 lg:p-9 hover:border-blue-600/20 transition-all flex flex-col">
                             <div className="mb-8">
                                 <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Institutional</div>
                                 <h3 className="text-2xl font-black text-slate-900 mb-4">Enterprise Plus</h3>
@@ -195,7 +195,7 @@ export default function PricingPage() {
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-slate-600">
                                     <Check className="w-5 h-5 text-green-500 shrink-0" />
-                                    <span>BAA & Custom Privacy SLAs</span>
+                                    <span>DPA & Custom Privacy SLAs</span>
                                 </div>
                             </div>
                             <Link href="/demo" className="w-full text-center bg-slate-100 text-slate-900 font-bold py-4 rounded-2xl hover:bg-slate-200 transition-all">
@@ -231,7 +231,7 @@ export default function PricingPage() {
                 <div className="max-w-6xl mx-auto flex flex-col sm:flex-row flex-wrap justify-between items-center gap-6 text-sm text-white/30 border-t border-white/5 pt-12">
                     <span className="text-white font-bold tracking-tight">SpecScribe</span>
                     <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
-                        <Link href="#" className="hover:text-blue-400 transition-colors">Privacy Policy</Link>
+                        <Link href="/privacy" className="hover:text-blue-400 transition-colors">Privacy Policy</Link>
                         <Link href="#" className="hover:text-blue-400 transition-colors">Compliance Hub</Link>
                         <Link href="#" className="hover:text-blue-400 transition-colors">Security Standards</Link>
                     </div>

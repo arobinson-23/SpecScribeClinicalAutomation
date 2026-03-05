@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/config";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { hasPermission } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db/client";
 import { encryptPHI, decryptPHI } from "@/lib/db/encryption";
 import { generatePriorAuthSummary } from "@/lib/ai/anthropic";
@@ -18,11 +18,13 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  const dbUser = await getDbUser();
+  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+  if (!hasPermission(dbUser.role, "prior_auth", "create")) {
+    return NextResponse.json(apiErr("Forbidden"), { status: 403 });
+  }
 
-  const practiceId = (session as unknown as { practiceId: string }).practiceId;
-  const userId = (session as unknown as { userId: string }).userId;
+  const { practiceId, id: userId } = dbUser;
 
   const body = await req.json();
   const parsed = schema.safeParse(body);

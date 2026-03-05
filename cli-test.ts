@@ -7,12 +7,11 @@ async function run() {
         const practiceId = "test-practice-id";
         await prisma.complianceAlert.upsert({
             where: {
-                id: "test-id",
+                practiceId_alertType: { practiceId, alertType: "pipeda_test" },
             },
             create: {
-                id: "test-id",
                 practice: { connect: { id: practiceId } },
-                alertType: "hipaa_check",
+                alertType: "pipeda_test",
                 severity: "info",
                 title: "Test Alert",
                 description: "This is a test desc",

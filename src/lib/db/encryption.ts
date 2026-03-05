@@ -4,16 +4,16 @@ import {
   randomBytes,
   createHash,
 } from "crypto";
+import { getAppSecret } from "@/lib/env";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 
 function getDEK(): Buffer {
-  const key = process.env.APP_SECRET;
-  if (!key) throw new Error("APP_SECRET environment variable is not set");
-  // Derive a 32-byte key from the secret
-  return createHash("sha256").update(key).digest();
+  // getAppSecret() validates presence, entropy, and weakness on every call
+  // but returns a cached value after the first successful check.
+  return createHash("sha256").update(getAppSecret()).digest();
 }
 
 export interface EncryptedField {

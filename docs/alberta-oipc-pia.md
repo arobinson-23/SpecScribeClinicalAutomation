@@ -42,7 +42,7 @@
 > - AI-assisted clinical note generation from audio recordings of provider-patient encounters
 > - Automated medical coding suggestions (CPT, ICD-10)
 > - Prior authorization automation
-> - HIPAA/HIA compliance monitoring
+> - PIPEDA/HIA compliance monitoring
 > - Billing and denial prevention analytics
 >
 > The platform processes audio recordings of clinical encounters, transcribes them using a speech-to-text API (Deepgram), and uses an AI language model (Anthropic Claude) to generate draft clinical notes. Providers review and approve all AI-generated content before finalization. No information is auto-submitted or finalized without explicit provider approval.
@@ -130,7 +130,7 @@
 | Recipient | Purpose | Legal Basis | Location |
 |---|---|---|---|
 | Anthropic (Claude API) | AI note generation from de-identified transcripts | Affiliate agreement — s. 37 HIA | USA (zero data retention agreement) |
-| Deepgram | Speech-to-text transcription | Affiliate agreement — s. 37 HIA | USA (HIPAA BAA in place) |
+| Deepgram | Speech-to-text transcription | Affiliate agreement — s. 37 HIA | USA (DPA (Data Processing Agreement) in place) |
 | Amazon Web Services | Cloud hosting, encrypted storage | Affiliate agreement — s. 37 HIA | Canada (ca-central-1 region preferred) |
 | Stripe | Billing/subscription management — **no PHI transmitted** | N/A — billing data only | USA |
 | Insurance payers | Prior authorization requests (provider-initiated) | s. 37 or patient consent | Varies |
@@ -139,7 +139,7 @@
 > **Yes** — AI processing (Anthropic Claude API) and speech-to-text (Deepgram) are US-based services. The following safeguards are in place:
 > - **Data minimization**: Patient name, date of birth, health card number, and address are stripped before sending content to AI APIs. Only clinical text necessary for note generation is transmitted.
 > - **Zero data retention**: Anthropic API is configured with zero data retention — prompts and outputs are not stored or used for model training.
-> - **Contractual protections**: Business Associate Agreements (BAAs) and data processing agreements are in place with all US-based vendors.
+> - **Contractual protections**: Data Processing Agreements (DPAs) are in place with all sub-processors and vendors.
 > - **Encryption in transit**: All data transmitted via TLS 1.3.
 >
 > Patients are informed of cross-border data flows in the practice's privacy notice and consent documentation.
@@ -158,7 +158,7 @@
 | Clinical notes / finalized records | 10 years from last entry | Exceeds Alberta HIA s. 35(2) minimum; covers all Canadian provincial jurisdictions |
 | Audio recordings | 30 days post-transcription, then destroyed | Temporary processing artifact; not a legal medical record |
 | Transcripts | 10 years (part of encounter record) | Required for audit and clinical continuity |
-| Audit logs | 10 years | HIPAA + HIA compliance requirement |
+| Audit logs | 10 years | PIPEDA + HIA compliance requirement |
 | Billing records | 7 years | CRA / provincial billing requirements |
 
 **F2. How is health information securely destroyed when no longer needed?**
@@ -172,7 +172,7 @@
 ## PART G: SECURITY SAFEGUARDS
 
 **G1. Describe the administrative safeguards in place.**
-> - All staff with access to health information complete HIPAA/HIA privacy training annually
+> - All staff with access to health information complete PIPEDA/HIA privacy training annually
 > - Role-based access control (RBAC): providers access only their own patients; admins manage practice-level settings; no role has unrestricted cross-practice access
 > - Privacy and security policies documented and reviewed annually
 > - Incident response plan in place with 72-hour breach notification procedures
@@ -189,8 +189,8 @@
 > - **Account lockout**: 5 failed login attempts triggers a 30-minute account lockout
 
 **G3. Describe the physical safeguards in place.**
-> - Platform hosted on AWS (HIPAA-eligible infrastructure); no on-premises servers
-> - AWS data centres maintain SOC 2 Type II, ISO 27001, and HIPAA compliance
+> - Platform hosted on AWS (PIPEDA-eligible infrastructure); no on-premises servers
+> - AWS data centres maintain SOC 2 Type II, ISO 27001, and PIPEDA compliance
 > - Canadian data residency (ca-central-1) targeted for primary storage; cross-border transfers limited to AI processing as described in Part E
 > - Staff access to production infrastructure requires VPN + MFA; no direct public database endpoints
 
@@ -221,13 +221,13 @@
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Unauthorized access to patient records | Low | Critical | MFA, RBAC, session timeouts, audit logging |
-| Cross-border data transfer (AI APIs) | Certain | Medium | Data minimization, zero-retention agreement, BAA, TLS 1.3 |
+| Cross-border data transfer (AI APIs) | Certain | Medium | Data minimization, zero-retention agreement, DPA, TLS 1.3 |
 | Data breach / ransomware | Low | Critical | Encryption at rest + in transit, immutable backups, incident response plan |
 | Insider threat (staff misuse) | Low | High | RBAC least-privilege, audit logs, access reviews |
 | AI hallucination affecting clinical decisions | Medium | High | All AI output is draft only; mandatory provider review before finalization |
 | Audio recording without patient consent | Low | High | Consent workflow built into encounter start flow; recording cannot begin without consent acknowledgement |
 | Re-identification from de-identified data sent to AI | Very Low | High | Strict field stripping before AI transmission; no name/DOB/HCN sent to external APIs |
-| Unauthorized secondary use by vendor | Low | Critical | Contractual prohibition in BAA/DPA; zero-retention API configuration |
+| Unauthorized secondary use by vendor | Low | Critical | Contractual prohibition in DPA; zero-retention API configuration |
 | Loss of availability (system downtime) | Low | Medium | Multi-AZ deployment, automated failover, 72-hour RTO target |
 
 **I2. Residual risks after mitigation:**
@@ -261,15 +261,15 @@ I attest that the information provided in this Privacy Impact Assessment is accu
 
 ## APPENDIX B: VENDOR AGREEMENTS REQUIRED BEFORE GO-LIVE
 
-- [ ] Anthropic — Data Processing Agreement (zero retention) + HIPAA BAA
-- [ ] Deepgram — HIPAA Business Associate Agreement
-- [ ] Amazon Web Services — HIPAA BAA (use AWS HIPAA-eligible services only)
+- [ ] Anthropic — Data Processing Agreement (zero retention) + DPA (Data Processing Agreement)
+- [ ] Deepgram — DPA (Data Processing Agreement)
+- [ ] Amazon Web Services — DPA (Data Processing Agreement) (use AWS PIPEDA-eligible services only)
 - [ ] Stripe — Data Processing Agreement (confirm no PHI transmitted)
 - [ ] Practice — Affiliate Agreement with SpecScribe under s. 37 HIA
 
 ## APPENDIX C: RELATED DOCUMENTS
 
-- SpecScribe HIPAA Security Risk Assessment (separate document)
+- SpecScribe Security Risk Assessment (separate document)
 - Incident Response Plan
 - Patient Consent for Audio Recording (template)
 - Privacy Notice / Information Practices statement

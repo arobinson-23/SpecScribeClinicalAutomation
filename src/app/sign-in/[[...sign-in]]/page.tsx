@@ -1,10 +1,22 @@
 import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
 import { LogoIcon } from "@/components/ui/LogoIcon";
-import { ShieldCheck, LogIn, UserPlus } from "lucide-react";
+import { ShieldCheck, LogIn, UserPlus, Clock } from "lucide-react";
 
-export default function Page() {
-    return (
+const TIMEOUT_MESSAGES: Record<string, string> = {
+  idle_timeout: "Your session expired after 15 minutes of inactivity.",
+  session_expired: "Your session has reached its 24-hour limit. Please sign in again.",
+};
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>;
+}) {
+  const { reason } = await searchParams;
+  const timeoutMessage = reason ? TIMEOUT_MESSAGES[reason] : undefined;
+
+  return (
         <div className="min-h-screen bg-[#0b0d17] flex items-center justify-center p-6 selection:bg-blue-500/30 overflow-hidden relative">
             {/* Background Decorative Elements */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -13,6 +25,18 @@ export default function Page() {
             </div>
 
             <div className="w-full max-w-[440px] z-10">
+                {/* Session timeout / expiry banner */}
+                {timeoutMessage && (
+                    <div className="mb-6 flex items-start gap-3 px-4 py-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl z-10 relative">
+                        <div className="pt-0.5 shrink-0">
+                            <Clock className="w-4 h-4 text-amber-400" />
+                        </div>
+                        <p className="text-[12px] leading-snug text-amber-300/90 font-medium">
+                            {timeoutMessage}
+                        </p>
+                    </div>
+                )}
+
                 {/* Logo Section */}
                 <div className="text-center mb-10">
                     <Link href="/" className="inline-flex items-center gap-3 group transition-transform hover:scale-105 active:scale-95">

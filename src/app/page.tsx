@@ -8,7 +8,7 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <section className="pt-16" style={{ background: 'linear-gradient(180deg, #0b0d17 0%, #0b0d17 30%, #eff6ff 75%, #ffffff 100%)' }}>
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 py-16 sm:py-28 text-center">
+        <div className="max-w-6xl mx-auto px-6 sm:px-8 py-16 md:py-20 lg:py-28 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold text-blue-300 uppercase tracking-wide mb-6">
             Serving Canadian specialty practices
           </div>
@@ -135,14 +135,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-16 sm:py-24 text-center px-6 sm:px-8" id="pricing">
+      <section className="py-14 md:py-20 lg:py-24 text-center px-6 sm:px-8" id="pricing">
         <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">
           Ready to reclaim your <span className="text-blue-600">evenings?</span>
         </h2>
         <p className="text-slate-500 text-base sm:text-lg max-w-md mx-auto mb-10">
           Join Canada&apos;s forward-thinking specialty practices. 30-day free trial — no credit card required.
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-3">
+        <div className="flex flex-col items-center sm:flex-row justify-center gap-3">
           <Link href="/pricing" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-md transition-colors shadow-lg shadow-blue-600/20">
             Compare Plans & ROI →
           </Link>
@@ -158,7 +158,7 @@ export default function LandingPage() {
           <span className="text-white font-bold">SpecScribe</span>
           <span className="text-center text-xs sm:text-sm">PIPEDA (Federal) and HIA (Alberta) Compliant · Made in Canada · © 2026 SpecScribe Inc.</span>
           <div className="flex gap-5">
-            <Link href="#" className="hover:text-blue-400 transition-colors">Privacy</Link>
+            <Link href="/privacy" className="hover:text-blue-400 transition-colors">Privacy</Link>
             <Link href="#" className="hover:text-blue-400 transition-colors">Terms</Link>
             <Link href="#" className="hover:text-blue-400 transition-colors">Security</Link>
           </div>

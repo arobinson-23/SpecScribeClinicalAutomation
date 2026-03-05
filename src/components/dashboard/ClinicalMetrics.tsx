@@ -1,26 +1,34 @@
 import React from 'react';
 import { Clock, CheckCircle, Zap } from 'lucide-react';
 
-export function ClinicalMetrics() {
-    const metrics = [
+interface ClinicalMetricsProps {
+    metrics: {
+        totalMinutesScribed: number;
+        notesFinalizedToday: number;
+        timeSavedHours: number;
+    };
+}
+
+export function ClinicalMetrics({ metrics }: ClinicalMetricsProps) {
+    const items = [
         {
             label: "Total Minutes Scribed",
-            value: "1,248",
-            subtext: "+12% from last week",
+            value: metrics.totalMinutesScribed.toLocaleString(),
+            subtext: "This month",
             icon: Clock,
             gradient: "from-blue-600/20 to-indigo-600/20",
         },
         {
             label: "Notes Finalized Today",
-            value: "24",
-            subtext: "100% completion rate",
+            value: metrics.notesFinalizedToday.toLocaleString(),
+            subtext: metrics.notesFinalizedToday > 0 ? "100% completion rate" : "No notes today",
             icon: CheckCircle,
             gradient: "from-emerald-600/20 to-teal-600/20",
         },
         {
             label: "Time Saved",
-            value: "6.2 hrs",
-            subtext: "Avg 15m/session",
+            value: metrics.timeSavedHours > 0 ? `${metrics.timeSavedHours} hrs` : "—",
+            subtext: "Avg 10m/note vs 15m manual",
             icon: Zap,
             gradient: "from-amber-600/20 to-orange-600/20",
         },
@@ -28,7 +36,7 @@ export function ClinicalMetrics() {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            {metrics.map((metric) => (
+            {items.map((metric) => (
                 <div
                     key={metric.label}
                     className={`relative overflow-hidden p-6 bg-white/[0.03] border border-white/10 rounded-2xl group hover:border-white/20 transition-all`}

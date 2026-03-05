@@ -26,7 +26,7 @@ export const PracticeSettingsSchema = z.object({
   showTimestampsInTranscript: z.boolean(),
 
   // ── Security & Session ────────────────────────────────────────────────────
-  // HIPAA §164.312(a)(2)(iii): automatic logoff — allowed range 5–15 minutes
+  // PIPEDA/HIA security safeguard: automatic logoff — allowed range 5–15 minutes
   idleTimeoutMinutes: z.enum(["5", "10", "15"]),
 
   // ── Personal Notifications ────────────────────────────────────────────────

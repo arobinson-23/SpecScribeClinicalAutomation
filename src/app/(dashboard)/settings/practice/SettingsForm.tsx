@@ -200,7 +200,7 @@ export function SettingsForm({ initial }: { initial: PracticeSettings }) {
       <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
         <SectionHeader
           title="Transcription"
-          description="Deepgram nova-2-medical speech-to-text settings"
+          description="AWS Transcribe Medical speech-to-text settings"
         />
         <div className="px-5">
           <Row
@@ -317,12 +317,12 @@ export function SettingsForm({ initial }: { initial: PracticeSettings }) {
       <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
         <SectionHeader
           title="Security &amp; Session"
-          description="HIPAA §164.312(a)(2)(iii) — automatic logoff after inactivity"
+          description="PIPEDA/HIA security safeguard — automatic logoff after inactivity"
         />
         <div className="px-5">
           <Row
             label="Session idle timeout"
-            description="You will be signed out after this period of inactivity. 15 minutes is the HIPAA-permitted maximum."
+            description="You will be signed out after this period of inactivity. 15 minutes is the recommended maximum under PIPEDA/HIA security safeguards."
           >
             <Select
               value={settings.idleTimeoutMinutes}

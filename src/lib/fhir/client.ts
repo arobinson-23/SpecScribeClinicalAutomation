@@ -45,13 +45,18 @@ export class FHIRClient {
       headers: { Accept: "application/json" },
     });
 
-    let tokenEndpoint: string;
-    if (conformanceRes.ok) {
-      const conformance = await conformanceRes.json();
-      tokenEndpoint = conformance.token_endpoint;
-    } else {
-      // Fallback to standard SMART path
-      tokenEndpoint = `${this.config.baseUrl}/oauth2/token`;
+    if (!conformanceRes.ok) {
+      throw new Error(
+        `FHIR SMART configuration fetch failed: ${conformanceRes.status} ${conformanceUrl}`
+      );
+    }
+
+    const conformance = await conformanceRes.json();
+    const tokenEndpoint: string | undefined = conformance.token_endpoint;
+    if (!tokenEndpoint) {
+      throw new Error(
+        `FHIR SMART configuration at ${conformanceUrl} did not include a token_endpoint`
+      );
     }
 
     const params = new URLSearchParams({

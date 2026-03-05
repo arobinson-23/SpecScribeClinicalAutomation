@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { getDbUser } from "@/lib/auth/get-db-user";
+import { writeAuditLog } from "@/lib/db/audit";
+import {
+    getDashboardMetrics,
+    getRecentEncounters,
+    getComplianceAlerts,
+    getLatestPendingEncounterCodes,
+} from "@/lib/dashboard/queries";
 import { ClinicalMetrics } from "@/components/dashboard/ClinicalMetrics";
 import { ActiveScribe } from "@/components/dashboard/ActiveScribe";
 import { EncounterList } from "@/components/dashboard/EncounterList";
@@ -16,6 +24,29 @@ export default async function DashboardPage() {
     }
 
     const user = await currentUser();
+
+    const dbUser = await getDbUser();
+
+    if (!dbUser) {
+        redirect("/sign-in");
+    }
+
+    const [metrics, encounters, alerts, latestCodes] = await Promise.all([
+        getDashboardMetrics(dbUser.practiceId),
+        getRecentEncounters(dbUser.practiceId),
+        getComplianceAlerts(dbUser.practiceId),
+        getLatestPendingEncounterCodes(dbUser.practiceId),
+    ]);
+
+    await writeAuditLog({
+        practiceId: dbUser.practiceId,
+        userId: dbUser.id,
+        action: "READ",
+        resource: "dashboard",
+        fieldsAccessed: ["encounter.count", "encounterNote.finalizedAt", "complianceAlert.severity"],
+    });
+
+    const draftCount = encounters.filter((e) => e.status !== "finalized").length;
 
     return (
         <div className="flex h-screen overflow-hidden bg-[#0b0d17] text-white selection:bg-blue-500/30">
@@ -44,23 +75,23 @@ export default async function DashboardPage() {
                                     href="/encounters"
                                     className="text-white hover:text-blue-400 border-b border-white/20 hover:border-blue-400 transition-all cursor-pointer"
                                 >
-                                    4 drafts
+                                    {draftCount} {draftCount === 1 ? "draft" : "drafts"}
                                 </Link>{" "}
                                 waiting for finalization today.
                             </p>
                         </header>
 
                         {/* Core Analytics */}
-                        <ClinicalMetrics />
+                        <ClinicalMetrics metrics={metrics} />
 
                         {/* Active Workzone */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-2">
                                 <ActiveScribe />
-                                <EncounterList />
+                                <EncounterList encounters={encounters} />
                             </div>
                             <div className="space-y-8">
-                                <ComplianceModule />
+                                <ComplianceModule alerts={alerts} />
 
                                 {/* EHR Sync Status */}
                                 <div className="p-6 bg-white/[0.03] border border-white/10 rounded-2xl">
@@ -87,7 +118,7 @@ export default async function DashboardPage() {
 
                     {/* Floating Sidebar (Desktop Only) */}
                     <div className="hidden xl:block">
-                        <AIInsightsSidebar />
+                        <AIInsightsSidebar latestCodes={latestCodes} />
                     </div>
                 </main>
             </div>

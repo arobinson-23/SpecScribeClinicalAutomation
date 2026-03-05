@@ -119,7 +119,7 @@ export default function IndustryUsePage() {
 
       {/* ── FEATURE 1: Connect Care ── */}
       <section className="max-w-5xl mx-auto px-6 sm:px-8 py-16 sm:py-24" id="how-it-works">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-blue-600 mb-3">Connect Care Integration</p>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
@@ -159,7 +159,7 @@ export default function IndustryUsePage() {
       {/* ── FEATURE 2: Specialty Notes ── */}
       <section className="bg-slate-50 py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-6 sm:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
             <CardShell title="AI Draft — Behavioural Health SOAP">
               <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full mb-4">
                 Draft — awaiting your review
@@ -198,7 +198,7 @@ export default function IndustryUsePage() {
 
       {/* ── FEATURE 3: AHCIP Billing ── */}
       <section className="max-w-5xl mx-auto px-6 sm:px-8 py-16 sm:py-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-blue-600 mb-3">AHCIP Billing Guidance</p>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-4">
@@ -269,9 +269,9 @@ export default function IndustryUsePage() {
             <p className="text-xs font-black uppercase tracking-widest text-blue-400 mb-3">From Canadian Clinicians</p>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">What physicians are saying</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
             {testimonials.map(({ quote, initials, name, role }) => (
-              <div key={name} className="bg-white/6 border border-white/10 rounded-xl p-8 flex flex-col gap-5">
+              <div key={name} className="bg-white/6 border border-white/10 rounded-xl p-5 md:p-5 lg:p-7 flex flex-col gap-4 lg:gap-5">
                 <p className="text-sm text-white/80 leading-relaxed italic">
                   <span className="text-blue-400 text-2xl leading-none align-[-8px] mr-1">&ldquo;</span>
                   {quote}
@@ -341,7 +341,7 @@ export default function IndustryUsePage() {
           <span className="text-white font-bold">SpecScribe</span>
           <span className="text-center text-xs sm:text-sm">PIPEDA (Federal) and HIA (Alberta) Compliant · Made in Canada · © 2026 SpecScribe Inc.</span>
           <div className="flex gap-5">
-            <Link href="#" className="hover:text-blue-400 transition-colors">Privacy</Link>
+            <Link href="/privacy" className="hover:text-blue-400 transition-colors">Privacy</Link>
             <Link href="#" className="hover:text-blue-400 transition-colors">Terms</Link>
             <Link href="#" className="hover:text-blue-400 transition-colors">Security</Link>
           </div>

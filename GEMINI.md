@@ -26,7 +26,7 @@ AI-native clinical documentation & compliance platform for specialty medical pra
 @.claude/rules/04-core-features.md
 @.claude/rules/05-ai-system-design.md
 @.claude/rules/06-coding-standards.md
-@.claude/rules/07-security-hipaa.md
+@.claude/rules/07-security-pipeda.md
 @.claude/rules/08-environment-variables.md
 @.claude/rules/09-development-workflow.md
 @.claude/rules/10-testing-strategy.md
@@ -85,7 +85,7 @@ Follow these steps in order:
 - No `any` types — use `unknown` with type guards.
 - No PHI in logs — field names only, never values.
 - No auto-finalizing — AI output stays as draft until provider approves.
-- No `encryptPHI()` calls skipped on fields listed in the PHI field table (`07-security-hipaa.md`).
+- No `encryptPHI()` calls skipped on fields listed in the PHI field table (`07-security-pipeda.md`).
 - No DB queries without `practiceId` scope.
 - No new pages shipped without an RBAC gate.
 

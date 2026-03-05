@@ -1,17 +1,17 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/config";
+import { getDbUser } from "@/lib/auth/get-db-user";
 import { prisma } from "@/lib/db/client";
 import { decryptPHISafe } from "@/lib/db/encryption";
-import { requirePermission } from "@/lib/auth/rbac";
+import { hasPermission, requirePermission } from "@/lib/auth/rbac";
 import { format } from "date-fns";
 import type { UserRole } from "@prisma/client";
+import ProviderVerificationSection from "./ProviderVerificationSection";
 
 export default async function UsersSettingsPage() {
-  const session = await getServerSession(authOptions);
-  const typedSession = session as unknown as { practiceId: string; role: string; id: string };
-  const practiceId = typedSession?.practiceId;
+  const dbUser = await getDbUser();
+  if (!dbUser) return null;
+  const { practiceId, role } = dbUser;
 
-  requirePermission(typedSession.role as UserRole, "user_management", "read");
+  requirePermission(role as UserRole, "user_management", "read");
 
   const users = await prisma.user.findMany({
     where: { practiceId, deletedAt: null },
@@ -114,9 +114,14 @@ export default async function UsersSettingsPage() {
       </div>
 
       <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-        <strong>HIPAA reminder:</strong> MFA is mandatory for all users with access to ePHI (2025 HIPAA NPRM).
+        <strong>PIPEDA reminder:</strong> MFA is mandatory for all users with access to ePHI.
         Users with MFA disabled are flagged in the compliance dashboard.
       </div>
+
+      {/* Provider College Verification — admin / superadmin only */}
+      {hasPermission(role as UserRole, "compliance", "create") && (
+        <ProviderVerificationSection />
+      )}
     </div>
   );
 }
