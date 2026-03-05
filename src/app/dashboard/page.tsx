@@ -18,7 +18,6 @@ import { CollapsibleSidebar } from "@/components/layout/CollapsibleSidebar";
 import { EhrSyncStatus } from "@/components/dashboard/EhrSyncStatus";
 
 export default async function DashboardPage() {
-    try {
     const { userId } = await auth();
 
     if (!userId) {
@@ -108,13 +107,4 @@ export default async function DashboardPage() {
             </div>
         </div>
     );
-    } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return (
-            <div className="min-h-screen bg-[#0b0d17] text-white p-8 font-mono">
-                <h1 className="text-red-400 text-xl font-bold mb-4">Dashboard Error (debug)</h1>
-                <pre className="text-sm text-white/70 whitespace-pre-wrap">{message}</pre>
-            </div>
-        );
-    }
 }
