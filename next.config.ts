@@ -28,7 +28,10 @@ const csp = [
   // data: covers inlined woff2 from Next.js font optimisation.
   "font-src 'self' data:",
   // wss: allows Clerk's real-time session-sync WebSocket.
-  `connect-src 'self' https://${clerkHost} wss://${clerkHost}`,
+  // clerk-telemetry.com: Clerk SDK telemetry endpoint.
+  `connect-src 'self' https://${clerkHost} wss://${clerkHost} https://clerk-telemetry.com`,
+  // blob: allows Clerk's background sync workers (new Worker(blob:...)).
+  "worker-src blob:",
   // Clerk mounts its hosted UI in an iframe in certain flows.
   `frame-src https://${clerkHost}`,
   // Disallow this page being embedded anywhere (defence-in-depth with X-Frame-Options).
