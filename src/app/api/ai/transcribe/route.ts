@@ -68,8 +68,39 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // DEV MOCK: bypass AWS Transcribe when TRANSCRIBE_MOCK=true (local dev only)
+  if (process.env.TRANSCRIBE_MOCK === "true") {
+    const mockTranscript =
+      "Provider: Good morning. How have you been feeling since our last session? " +
+      "Patient: I've been doing a bit better. The new medication seems to be helping with the anxiety. " +
+      "Provider: That's encouraging to hear. Have you been keeping up with the breathing exercises we discussed? " +
+      "Patient: Yes, I've been doing them every morning. It really helps me start the day more calmly. " +
+      "Provider: Excellent. Let's talk about your sleep patterns this week.";
+    return NextResponse.json(
+      apiOk({
+        transcript: mockTranscript,
+        segments: [
+          { speaker: "provider", text: "Good morning. How have you been feeling since our last session?", startMs: 0, endMs: 4000, confidence: 0.99 },
+          { speaker: "patient", text: "I've been doing a bit better. The new medication seems to be helping with the anxiety.", startMs: 4500, endMs: 9000, confidence: 0.97 },
+          { speaker: "provider", text: "That's encouraging to hear. Have you been keeping up with the breathing exercises we discussed?", startMs: 9500, endMs: 14000, confidence: 0.98 },
+          { speaker: "patient", text: "Yes, I've been doing them every morning. It really helps me start the day more calmly.", startMs: 14500, endMs: 19000, confidence: 0.96 },
+          { speaker: "provider", text: "Excellent. Let's talk about your sleep patterns this week.", startMs: 19500, endMs: 23000, confidence: 0.99 },
+        ],
+        confidence: 0.978,
+        durationMs: 23000,
+      })
+    );
+  }
+
   // Transcribe via AWS Transcribe Medical (ca-central-1 — HIA / PIPEDA Canadian data residency)
-  const result = await transcribeAudioFromS3(audioKey, encounterId);
+  let result: Awaited<ReturnType<typeof transcribeAudioFromS3>>;
+  try {
+    result = await transcribeAudioFromS3(audioKey, encounterId);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown transcription error";
+    console.error("[transcribe] AWS Transcribe failed:", message);
+    return NextResponse.json(apiErr(`Transcription failed: ${message}`), { status: 502 });
+  }
 
   await writeAuditLog({
     practiceId,

@@ -50,7 +50,7 @@ export default function Page() {
                             </Link>
                         </div>
 
-                        <SignUp appearance={{
+                        <SignUp afterSignUpUrl="/onboarding" appearance={{
                             elements: {
                                 rootBox: 'w-full flex justify-center',
                                 card: 'bg-transparent border-none shadow-none p-0 w-full mx-auto',

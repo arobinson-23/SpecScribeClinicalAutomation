@@ -15,7 +15,7 @@ PRIOR AUTH CLINICAL SUMMARY FORMAT:
 5. Treatment Plan: Specific service requested, anticipated duration, measurable goals
 6. Provider Attestation: Statement that service is medically necessary
 
-OUTPUT: Return valid JSON with fields: clinicalSummary, medicalNecessityStatement, supportingDiagnoses, missingDocumentation.`;
+OUTPUT: Return a single compact JSON object with these fields: clinicalSummary (string), medicalNecessityStatement (string), missingDocumentation (string[]). All string values must be on a single line with no embedded newlines. Do not include markdown code fences or any text outside the JSON object.`;
 
 export function buildPriorAuthPrompt(params: {
   payerName: string;
@@ -37,5 +37,5 @@ ${params.clinicalNote}
 
 ${params.payerCriteria ? `PAYER-SPECIFIC CRITERIA TO ADDRESS:\n${params.payerCriteria}\n` : ""}
 
-Generate a comprehensive prior authorization package. Be specific, cite the clinical documentation directly, and address all payer criteria. Return JSON.`;
+Generate a prior authorization package. Be specific and cite the clinical documentation. Return ONLY a raw JSON object — no markdown, no code fences, no text before or after. Keep all string values on a single line (no embedded newlines).`;
 }

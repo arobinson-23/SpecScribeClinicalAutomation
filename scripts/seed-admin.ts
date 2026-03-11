@@ -49,7 +49,7 @@ async function main() {
     data: {
       practiceId: practice.id,
       email,
-      role: "admin",
+      role: "provider",
       firstName: encryptPHI("Adam"),
       lastName: encryptPHI("Robinson"),
       active: true,

@@ -15,6 +15,10 @@ import { MigrationUpload } from "@/app/(dashboard)/admin/migration/MigrationUplo
 
 type Mode = "manual" | "migrate";
 
+interface NewClientPageProps {
+  canMigrate: boolean;
+}
+
 // ── Field helper ──────────────────────────────────────────────────────────────
 
 const inputClass =
@@ -26,7 +30,7 @@ const labelClass = "block text-xs font-medium text-white/50 mb-1.5";
 
 function ManualEntryForm({ onSuccess }: { onSuccess: (id: string) => void }) {
   const [form, setForm] = useState({
-    mrn: "",
+    phn: "",
     firstName: "",
     lastName: "",
     dob: "",
@@ -49,7 +53,7 @@ function ManualEntryForm({ onSuccess }: { onSuccess: (id: string) => void }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mrn: form.mrn,
+          phn: form.phn,
           firstName: form.firstName,
           lastName: form.lastName,
           dob: form.dob,
@@ -60,7 +64,7 @@ function ManualEntryForm({ onSuccess }: { onSuccess: (id: string) => void }) {
       });
 
       const json = (await res.json()) as {
-        data: { id: string; mrn: string } | null;
+        data: { id: string; phn: string } | null;
         error: string | null;
       };
 
@@ -115,15 +119,15 @@ function ManualEntryForm({ onSuccess }: { onSuccess: (id: string) => void }) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className={labelClass}>
-            MRN (Medical Record Number) <span className="text-red-400">*</span>
+            PHN (Personal Health Number) <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
             required
             className={`${inputClass} font-mono`}
-            placeholder="MRN-001234"
-            value={form.mrn}
-            onChange={set("mrn")}
+            placeholder="9876100001"
+            value={form.phn}
+            onChange={set("phn")}
           />
         </div>
         <div>
@@ -228,7 +232,7 @@ function MigrationSection() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export function NewClientPage() {
+export function NewClientPage({ canMigrate }: NewClientPageProps) {
   const [mode, setMode] = useState<Mode>("manual");
   const router = useRouter();
 
@@ -245,41 +249,45 @@ export function NewClientPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Add Client</h1>
           <p className="text-white/50 text-sm mt-0.5">
-            Enter details manually or migrate all legacy data at once
+            {canMigrate
+              ? "Enter details manually or migrate all legacy data at once"
+              : "Enter client details manually"}
           </p>
         </div>
       </div>
 
-      {/* Mode switcher */}
-      <div className="flex gap-1 bg-white/[0.03] border border-white/10 rounded-xl p-1 mb-6">
-        <button
-          onClick={() => setMode("manual")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
-            mode === "manual"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-white/50 hover:text-white/80"
-          }`}
-        >
-          <UserPlus className="w-4 h-4" />
-          Manual Entry
-        </button>
-        <button
-          onClick={() => setMode("migrate")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
-            mode === "migrate"
-              ? "bg-purple-600 text-white shadow-sm"
-              : "text-white/50 hover:text-white/80"
-          }`}
-        >
-          <DatabaseBackup className="w-4 h-4" />
-          Migrate Legacy Data
-        </button>
-      </div>
+      {/* Mode switcher — only shown to admins */}
+      {canMigrate && (
+        <div className="flex gap-1 bg-white/[0.03] border border-white/10 rounded-xl p-1 mb-6">
+          <button
+            onClick={() => setMode("manual")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+              mode === "manual"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            <UserPlus className="w-4 h-4" />
+            Manual Entry
+          </button>
+          <button
+            onClick={() => setMode("migrate")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+              mode === "migrate"
+                ? "bg-purple-600 text-white shadow-sm"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            <DatabaseBackup className="w-4 h-4" />
+            Migrate Legacy Data
+          </button>
+        </div>
+      )}
 
-      {mode === "manual" ? (
-        <ManualEntryForm onSuccess={(id) => router.push(`/patients/${id}`)} />
-      ) : (
+      {canMigrate && mode === "migrate" ? (
         <MigrationSection />
+      ) : (
+        <ManualEntryForm onSuccess={(id) => router.push(`/patients/${id}`)} />
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 export interface CreatePatientInput {
-  mrn: string;
+  phn: string;
   firstName: string;
   lastName: string;
   dob: string; // YYYY-MM-DD
@@ -24,7 +24,7 @@ export interface CreatePatientInput {
 
 export interface PatientSummary {
   id: string;
-  mrn: string;
+  phn: string;
   firstName: string;
   lastName: string;
   dob: string;

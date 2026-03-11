@@ -55,7 +55,7 @@ export async function GET(
   return NextResponse.json(
     apiOk({
       id: patient.id,
-      mrn: patient.mrn,
+      phn: patient.phn,
       firstName: decryptPHISafe(patient.firstName) ?? "[encrypted]",
       lastName: decryptPHISafe(patient.lastName) ?? "[encrypted]",
       dob: decryptPHISafe(patient.dob) ?? null,

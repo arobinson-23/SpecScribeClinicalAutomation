@@ -14,350 +14,468 @@
    ============================================================ */
 
 @layer base {
-  :root {
+   :root {
 
-    /* ──────────────────────────────────────────
+      /* ──────────────────────────────────────────
        SHADCN CORE TOKENS
     ────────────────────────────────────────── */
 
-    /* Page background — Soft Slate #F8FAFC (reduces glare, cool-neutral)
+      /* Page background — Soft Slate #F8FAFC (reduces glare, cool-neutral)
        Contrast: foreground on background ≈ 14.2:1 → WCAG AAA ✓              */
-    --background:           210 40% 98%;
-    --foreground:           220 16% 14%;   /* warm dark navy, not pure black  */
+      --background: 210 40% 98%;
+      --foreground: 220 16% 14%;
+      /* warm dark navy, not pure black  */
 
-    /* Card / surface — marginally lighter than page bg
+      /* Card / surface — marginally lighter than page bg
        Contrast: card-foreground on card ≈ 14.2:1 ✓                           */
-    --card:                 210 20% 99%;
-    --card-foreground:      220 16% 14%;
+      --card: 210 20% 99%;
+      --card-foreground: 220 16% 14%;
 
-    --popover:              210 20% 99%;
-    --popover-foreground:   220 16% 14%;
+      --popover: 210 20% 99%;
+      --popover-foreground: 220 16% 14%;
 
-    /* Primary — Midnight Navy #0F172A (sidebars, headers, primary branding)
+      /* Primary — Midnight Navy #0F172A (sidebars, headers, primary branding)
        Contrast on white: ≈ 20.5:1 → AAA ✓
        White text on primary: ≈ 20.5:1 → AAA ✓                                */
-    --primary:              222 47% 11%;
-    --primary-foreground:   0 0% 97%;
+      --primary: 222 47% 11%;
+      --primary-foreground: 0 0% 97%;
 
-    /* Secondary — warm sage-gray complement to primary
+      /* Secondary — warm sage-gray complement to primary
        Contrast on white: ≈ 3.5:1 → AA large ✓ (used for secondary buttons)  */
-    --secondary:            165 16% 93%;
-    --secondary-foreground: 165 20% 22%;
+      --secondary: 165 16% 93%;
+      --secondary-foreground: 165 20% 22%;
 
-    /* Muted — cool-neutral light gray for disabled states, placeholders        */
-    --muted:                210 14% 93%;
-    --muted-foreground:     220 8% 46%;    /* ≈ 4.6:1 on muted bg ✓           */
+      /* Muted — cool-neutral light gray for disabled states, placeholders        */
+      --muted: 210 14% 93%;
+      --muted-foreground: 220 8% 46%;
+      /* ≈ 4.6:1 on muted bg ✓           */
 
-    /* Accent — subtle navy tint for hover, focus backgrounds                  */
-    --accent:               222 30% 93%;
-    --accent-foreground:    222 47% 22%;
+      /* Accent — subtle navy tint for hover, focus backgrounds                  */
+      --accent: 222 30% 93%;
+      --accent-foreground: 222 47% 22%;
 
-    /* Destructive — soft clinical red (NOT pure red — avoids CODE conflict)
+      /* Destructive — soft clinical red (NOT pure red — avoids CODE conflict)
        Contrast on white: ≈ 4.8:1 → AA ✓                                      */
-    --destructive:          355 68% 48%;
-    --destructive-foreground: 355 20% 97%;
+      --destructive: 355 68% 48%;
+      --destructive-foreground: 355 20% 97%;
 
-    --border:               210 20% 88%;
-    --input:                210 20% 88%;
-    --ring:                 189 94% 43%;   /* Electric Cyan — visible focus ring */
-    --radius:               0.5rem;
+      --border: 210 20% 88%;
+      --input: 210 20% 88%;
+      --ring: 189 94% 43%;
+      /* Electric Cyan — visible focus ring */
+      --radius: 0.5rem;
 
-    /* Sidebar — Midnight Navy #0F172A (stays dark in both modes for nav consistency)
+      /* Sidebar — Midnight Navy #0F172A (stays dark in both modes for nav consistency)
        Contrast: sidebar-foreground on sidebar-bg ≈ 14.1:1 ✓                  */
-    --sidebar-background:         222 47% 11%;
-    --sidebar-foreground:         210 22% 88%;
-    --sidebar-primary:            189 94% 43%;   /* Electric Cyan active items  */
-    --sidebar-primary-foreground: 222 47% 8%;
-    --sidebar-accent:             222 40% 18%;
-    --sidebar-accent-foreground:  210 22% 88%;
-    --sidebar-border:             222 38% 18%;
-    --sidebar-ring:               189 94% 43%;
+      --sidebar-background: 222 47% 11%;
+      --sidebar-foreground: 210 22% 88%;
+      --sidebar-primary: 189 94% 43%;
+      /* Electric Cyan active items  */
+      --sidebar-primary-foreground: 222 47% 8%;
+      --sidebar-accent: 222 40% 18%;
+      --sidebar-accent-foreground: 210 22% 88%;
+      --sidebar-border: 222 38% 18%;
+      --sidebar-ring: 189 94% 43%;
 
-    /* Chart tokens — aligned with brand palette                               */
-    --chart-1: 222 47% 40%;   /* midnight navy variant  */
-    --chart-2: 160 75% 42%;   /* emerald variant        */
-    --chart-3: 38  88% 50%;   /* amber                  */
-    --chart-4: 189 80% 42%;   /* electric cyan variant  */
-    --chart-5: 355 68% 52%;   /* soft clinical red      */
+      /* Chart tokens — aligned with brand palette                               */
+      --chart-1: 222 47% 40%;
+      /* midnight navy variant  */
+      --chart-2: 160 75% 42%;
+      /* emerald variant        */
+      --chart-3: 38 88% 50%;
+      /* amber                  */
+      --chart-4: 189 80% 42%;
+      /* electric cyan variant  */
+      --chart-5: 355 68% 52%;
+      /* soft clinical red      */
 
-    /* ──────────────────────────────────────────
+      /* ──────────────────────────────────────────
        NEUTRAL GRAY SCALE — 9 steps, warm undertone (hue ≈ 220, low saturation)
     ────────────────────────────────────────── */
-    --gray-50:  220 18% 98%;
-    --gray-100: 220 14% 95%;
-    --gray-200: 220 12% 90%;
-    --gray-300: 220 10% 82%;
-    --gray-400: 220  8% 65%;
-    --gray-500: 220  7% 50%;
-    --gray-600: 220  8% 38%;
-    --gray-700: 220 10% 28%;
-    --gray-800: 220 12% 18%;
-    --gray-900: 220 16% 10%;
+      --gray-50: 220 18% 98%;
+      --gray-100: 220 14% 95%;
+      --gray-200: 220 12% 90%;
+      --gray-300: 220 10% 82%;
+      --gray-400: 220 8% 65%;
+      --gray-500: 220 7% 50%;
+      --gray-600: 220 8% 38%;
+      --gray-700: 220 10% 28%;
+      --gray-800: 220 12% 18%;
+      --gray-900: 220 16% 10%;
 
-    /* ──────────────────────────────────────────
+      /* ──────────────────────────────────────────
        SPECDOC — SEMANTIC COLORS
     ────────────────────────────────────────── */
 
-    /* Success — Emerald #10B981 (Note Finalized, Sync Complete, approved)
+      /* Success — Emerald #10B981 (Note Finalized, Sync Complete, approved)
        Aligns with medical convention: green = normal ✓                        */
-    --specdoc-success:            160 84% 39%;
-    --specdoc-success-foreground: 0 0% 97%;
-    --specdoc-success-surface:    160 65% 93%;  /* bg tint for success cells   */
+      --specdoc-success: 160 84% 39%;
+      --specdoc-success-foreground: 0 0% 97%;
+      --specdoc-success-surface: 160 65% 93%;
+      /* bg tint for success cells   */
 
-    /* Warning — warm amber (pending, approaching deadline, medium confidence)
+      /* Warning — warm amber (pending, approaching deadline, medium confidence)
        Aligns with medical convention: yellow = caution ✓                      */
-    --specdoc-warning:            38 88% 46%;
-    --specdoc-warning-foreground: 38 60% 14%;
-    --specdoc-warning-surface:    38 80% 94%;
+      --specdoc-warning: 38 88% 46%;
+      --specdoc-warning-foreground: 38 60% 14%;
+      --specdoc-warning-surface: 38 80% 94%;
 
-    /* Error — soft clinical red (denied claims, violations, failures)
+      /* Error — soft clinical red (denied claims, violations, failures)
        Softer than pure red; avoids looking like CODE RED alarm                */
-    --specdoc-error:              355 68% 48%;
-    --specdoc-error-foreground:   355 20% 97%;
-    --specdoc-error-surface:      355 65% 95%;
+      --specdoc-error: 355 68% 48%;
+      --specdoc-error-foreground: 355 20% 97%;
+      --specdoc-error-surface: 355 65% 95%;
 
-    /* Info — lighter teal (AI suggestions, tooltips, system messages)         */
-    --specdoc-info:               199 65% 42%;
-    --specdoc-info-foreground:    199 30% 97%;
-    --specdoc-info-surface:       199 55% 94%;
+      /* Info — lighter teal (AI suggestions, tooltips, system messages)         */
+      --specdoc-info: 199 65% 42%;
+      --specdoc-info-foreground: 199 30% 97%;
+      --specdoc-info-surface: 199 55% 94%;
 
-    /* ──────────────────────────────────────────
+      /* ──────────────────────────────────────────
        SPECDOC — AI CONFIDENCE TOKENS
        Prefix: --specdoc-ai-
     ────────────────────────────────────────── */
 
-    --specdoc-ai-high:            160 84% 39%;   /* HIGH confidence — emerald  */
-    --specdoc-ai-high-surface:    160 65% 93%;
-    --specdoc-ai-high-foreground: 160 84% 20%;
+      --specdoc-ai-high: 160 84% 39%;
+      /* HIGH confidence — emerald  */
+      --specdoc-ai-high-surface: 160 65% 93%;
+      --specdoc-ai-high-foreground: 160 84% 20%;
 
-    --specdoc-ai-medium:          38 88% 46%;    /* MEDIUM confidence — amber  */
-    --specdoc-ai-medium-surface:  38 80% 93%;
-    --specdoc-ai-medium-foreground: 38 70% 20%;
+      --specdoc-ai-medium: 38 88% 46%;
+      /* MEDIUM confidence — amber  */
+      --specdoc-ai-medium-surface: 38 80% 93%;
+      --specdoc-ai-medium-foreground: 38 70% 20%;
 
-    --specdoc-ai-low:             355 68% 48%;   /* LOW confidence — soft red  */
-    --specdoc-ai-low-surface:     355 65% 94%;
-    --specdoc-ai-low-foreground:  355 60% 22%;
+      --specdoc-ai-low: 355 68% 48%;
+      /* LOW confidence — soft red  */
+      --specdoc-ai-low-surface: 355 65% 94%;
+      --specdoc-ai-low-foreground: 355 60% 22%;
 
-    /* AI-generated content background tint — subtle cyan wash
+      /* AI-generated content background tint — subtle cyan wash
        Visually distinguishes AI output from provider-written text              */
-    --specdoc-ai-surface:         189 40% 96%;
-    --specdoc-ai-border:          189 45% 84%;
+      --specdoc-ai-surface: 189 40% 96%;
+      --specdoc-ai-border: 189 45% 84%;
 
-    /* AI processing/thinking state — Electric Cyan #06B6D4 (Record buttons)   */
-    --specdoc-ai-processing:      189 94% 43%;
-    --specdoc-ai-processing-surface: 189 80% 93%;
+      /* AI processing/thinking state — Electric Cyan #06B6D4 (Record buttons)   */
+      --specdoc-ai-processing: 189 94% 43%;
+      --specdoc-ai-processing-surface: 189 80% 93%;
 
-    /* ──────────────────────────────────────────
+      /* ──────────────────────────────────────────
        SPECDOC — ENCOUNTER STATUS TOKENS
        Five-step workflow with clear visual progression:
        not-started → in-progress → ai-processing → needs-review → finalized
     ────────────────────────────────────────── */
 
-    --specdoc-encounter-not-started:      220 8% 62%;   /* neutral gray        */
-    --specdoc-encounter-not-started-bg:   220 8% 95%;
+      --specdoc-encounter-not-started: 220 8% 62%;
+      /* neutral gray        */
+      --specdoc-encounter-not-started-bg: 220 8% 95%;
 
-    --specdoc-encounter-in-progress:      199 65% 42%;  /* info teal           */
-    --specdoc-encounter-in-progress-bg:   199 55% 93%;
+      --specdoc-encounter-in-progress: 199 65% 42%;
+      /* info teal           */
+      --specdoc-encounter-in-progress-bg: 199 55% 93%;
 
-    --specdoc-encounter-ai-processing:    189 94% 43%;  /* Electric Cyan       */
-    --specdoc-encounter-ai-processing-bg: 189 80% 93%;
+      --specdoc-encounter-ai-processing: 189 94% 43%;
+      /* Electric Cyan       */
+      --specdoc-encounter-ai-processing-bg: 189 80% 93%;
 
-    --specdoc-encounter-needs-review:     38 88% 46%;   /* amber — attention   */
-    --specdoc-encounter-needs-review-bg:  38 80% 93%;
+      --specdoc-encounter-needs-review: 38 88% 46%;
+      /* amber — attention   */
+      --specdoc-encounter-needs-review-bg: 38 80% 93%;
 
-    --specdoc-encounter-finalized:        160 84% 39%;  /* emerald — done      */
-    --specdoc-encounter-finalized-bg:     160 65% 93%;
+      --specdoc-encounter-finalized: 160 84% 39%;
+      /* emerald — done      */
+      --specdoc-encounter-finalized-bg: 160 65% 93%;
 
-    /* ──────────────────────────────────────────
+      /* ──────────────────────────────────────────
        SPECDOC — COMPLIANCE STATUS TOKENS
        Aligns with medical alert conventions
     ────────────────────────────────────────── */
 
-    --specdoc-compliance-compliant:       160 84% 39%;
-    --specdoc-compliance-compliant-bg:    160 65% 93%;
+      --specdoc-compliance-compliant: 160 84% 39%;
+      --specdoc-compliance-compliant-bg: 160 65% 93%;
 
-    --specdoc-compliance-at-risk:         38 88% 46%;
-    --specdoc-compliance-at-risk-bg:      38 80% 93%;
+      --specdoc-compliance-at-risk: 38 88% 46%;
+      --specdoc-compliance-at-risk-bg: 38 80% 93%;
 
-    --specdoc-compliance-non-compliant:   355 68% 48%;
-    --specdoc-compliance-non-compliant-bg: 355 65% 94%;
+      --specdoc-compliance-non-compliant: 355 68% 48%;
+      --specdoc-compliance-non-compliant-bg: 355 65% 94%;
 
-    /* ──────────────────────────────────────────
+      /* ──────────────────────────────────────────
        SPECDOC — PRIOR AUTH STATUS TOKENS
     ────────────────────────────────────────── */
 
-    --specdoc-auth-pending:    220 8% 62%;    --specdoc-auth-pending-bg:    220 8% 95%;
-    --specdoc-auth-submitted:  189 94% 43%;  --specdoc-auth-submitted-bg:  189 80% 93%;
-    --specdoc-auth-approved:   160 84% 39%;  --specdoc-auth-approved-bg:   160 65% 93%;
-    --specdoc-auth-denied:     355 68% 48%;  --specdoc-auth-denied-bg:     355 65% 94%;
-    --specdoc-auth-appeal:     265 65% 58%;  --specdoc-auth-appeal-bg:     265 50% 94%;
+      --specdoc-auth-pending: 220 8% 62%;
+      --specdoc-auth-pending-bg: 220 8% 95%;
+      --specdoc-auth-submitted: 189 94% 43%;
+      --specdoc-auth-submitted-bg: 189 80% 93%;
+      --specdoc-auth-approved: 160 84% 39%;
+      --specdoc-auth-approved-bg: 160 65% 93%;
+      --specdoc-auth-denied: 355 68% 48%;
+      --specdoc-auth-denied-bg: 355 65% 94%;
+      --specdoc-auth-appeal: 265 65% 58%;
+      --specdoc-auth-appeal-bg: 265 50% 94%;
 
-    /* ──────────────────────────────────────────
+      /* ──────────────────────────────────────────
        SPECDOC — SPECIALTY ACCENT TOKENS
        For multi-specialty tagging chips and category labels
     ────────────────────────────────────────── */
 
-    --specdoc-specialty-behavioral-health: 265 50% 56%;  /* warm purple        */
-    --specdoc-specialty-behavioral-health-bg: 265 40% 95%;
+      --specdoc-specialty-behavioral-health: 265 50% 56%;
+      /* warm purple        */
+      --specdoc-specialty-behavioral-health-bg: 265 40% 95%;
 
-    --specdoc-specialty-dermatology:       350 68% 56%;  /* rose               */
-    --specdoc-specialty-dermatology-bg:    350 60% 95%;
+      --specdoc-specialty-dermatology: 350 68% 56%;
+      /* rose               */
+      --specdoc-specialty-dermatology-bg: 350 60% 95%;
 
-    --specdoc-specialty-orthopedics:       199 65% 38%;  /* teal-blue          */
-    --specdoc-specialty-orthopedics-bg:    199 55% 93%;
+      --specdoc-specialty-orthopedics: 199 65% 38%;
+      /* teal-blue          */
+      --specdoc-specialty-orthopedics-bg: 199 55% 93%;
 
-    --specdoc-specialty-pain-management:   28 80% 50%;   /* warm orange-amber  */
-    --specdoc-specialty-pain-management-bg: 28 75% 93%;
+      --specdoc-specialty-pain-management: 28 80% 50%;
+      /* warm orange-amber  */
+      --specdoc-specialty-pain-management-bg: 28 75% 93%;
 
-    --specdoc-specialty-oncology:          152 42% 36%;  /* deep clinical green */
-    --specdoc-specialty-oncology-bg:       152 38% 93%;
-  }
+      --specdoc-specialty-oncology: 152 42% 36%;
+      /* deep clinical green */
+      --specdoc-specialty-oncology-bg: 152 38% 93%;
+   }
 
-  /* ============================================================
+   /* ============================================================
      DARK MODE
      Background lightness inverted; tints adjusted for contrast.
      Sidebar stays consistent (same dark navy in both modes).
      ============================================================ */
-  .dark {
+   .dark {
 
-    /* Page surfaces                                                            */
-    --background:           222 22% 10%;
-    --foreground:           210 20% 90%;   /* warm light gray, not pure white  */
+      /* Page surfaces                                                            */
+      --background: 222 22% 10%;
+      --foreground: 210 20% 90%;
+      /* warm light gray, not pure white  */
 
-    --card:                 217 33% 17%;   /* Deep Charcoal #1E293B */
-    --card-foreground:      210 20% 90%;
+      --card: 217 33% 17%;
+      /* Deep Charcoal #1E293B */
+      --card-foreground: 210 20% 90%;
 
-    --popover:              217 33% 17%;   /* Deep Charcoal #1E293B */
-    --popover-foreground:   210 20% 90%;
+      --popover: 217 33% 17%;
+      /* Deep Charcoal #1E293B */
+      --popover-foreground: 210 20% 90%;
 
-    /* Primary — lightened Midnight Navy for dark backgrounds
+      /* Primary — lightened Midnight Navy for dark backgrounds
        Contrast on Deep Charcoal card ≈ 5.8:1 ✓                                */
-    --primary:              222 55% 65%;
-    --primary-foreground:   222 22% 8%;
+      --primary: 222 55% 65%;
+      --primary-foreground: 222 22% 8%;
 
-    --secondary:            222 20% 20%;
-    --secondary-foreground: 210 20% 82%;
+      --secondary: 222 20% 20%;
+      --secondary-foreground: 210 20% 82%;
 
-    --muted:                222 18% 18%;
-    --muted-foreground:     220 10% 62%;
+      --muted: 222 18% 18%;
+      --muted-foreground: 220 10% 62%;
 
-    --accent:               222 30% 22%;
-    --accent-foreground:    222 50% 78%;
+      --accent: 222 30% 22%;
+      --accent-foreground: 222 50% 78%;
 
-    --destructive:          355 62% 52%;
-    --destructive-foreground: 355 20% 97%;
+      --destructive: 355 62% 52%;
+      --destructive-foreground: 355 20% 97%;
 
-    --border:               222 18% 22%;
-    --input:                222 18% 22%;
-    --ring:                 189 80% 52%;   /* Electric Cyan focus ring */
+      --border: 222 18% 22%;
+      --input: 222 18% 22%;
+      --ring: 189 80% 52%;
+      /* Electric Cyan focus ring */
 
-    /* Sidebar stays Midnight Navy in dark mode too                             */
-    --sidebar-background:         222 47% 9%;
-    --sidebar-foreground:         210 22% 88%;
-    --sidebar-primary:            189 80% 52%;   /* Electric Cyan active items  */
-    --sidebar-primary-foreground: 222 47% 8%;
-    --sidebar-accent:             222 40% 16%;
-    --sidebar-accent-foreground:  210 22% 88%;
-    --sidebar-border:             222 38% 16%;
-    --sidebar-ring:               189 80% 52%;
+      /* Sidebar stays Midnight Navy in dark mode too                             */
+      --sidebar-background: 222 47% 9%;
+      --sidebar-foreground: 210 22% 88%;
+      --sidebar-primary: 189 80% 52%;
+      /* Electric Cyan active items  */
+      --sidebar-primary-foreground: 222 47% 8%;
+      --sidebar-accent: 222 40% 16%;
+      --sidebar-accent-foreground: 210 22% 88%;
+      --sidebar-border: 222 38% 16%;
+      --sidebar-ring: 189 80% 52%;
 
-    /* Charts — slightly lighter for dark bg visibility                        */
-    --chart-1: 222 55% 58%;   /* navy variant  */
-    --chart-2: 160 70% 52%;   /* emerald       */
-    --chart-3: 38  85% 58%;   /* amber         */
-    --chart-4: 189 85% 58%;   /* cyan variant  */
-    --chart-5: 355 65% 60%;   /* clinical red  */
+      /* Charts — slightly lighter for dark bg visibility                        */
+      --chart-1: 222 55% 58%;
+      /* navy variant  */
+      --chart-2: 160 70% 52%;
+      /* emerald       */
+      --chart-3: 38 85% 58%;
+      /* amber         */
+      --chart-4: 189 85% 58%;
+      /* cyan variant  */
+      --chart-5: 355 65% 60%;
+      /* clinical red  */
 
-    /* Grays (inverted)                                                         */
-    --gray-50:  220 16% 12%;
-    --gray-100: 220 14% 16%;
-    --gray-200: 220 12% 22%;
-    --gray-300: 220 10% 32%;
-    --gray-400: 220  8% 45%;
-    --gray-500: 220  7% 58%;
-    --gray-600: 220  8% 70%;
-    --gray-700: 220 10% 80%;
-    --gray-800: 220 12% 88%;
-    --gray-900: 220 16% 94%;
+      /* Grays (inverted)                                                         */
+      --gray-50: 220 16% 12%;
+      --gray-100: 220 14% 16%;
+      --gray-200: 220 12% 22%;
+      --gray-300: 220 10% 32%;
+      --gray-400: 220 8% 45%;
+      --gray-500: 220 7% 58%;
+      --gray-600: 220 8% 70%;
+      --gray-700: 220 10% 80%;
+      --gray-800: 220 12% 88%;
+      --gray-900: 220 16% 94%;
 
-    /* SpecDoc semantic — darker surfaces for dark mode                         */
-    --specdoc-success:            160 70% 52%;
-    --specdoc-success-foreground: 222 22% 8%;
-    --specdoc-success-surface:    160 40% 16%;
+      /* SpecDoc semantic — darker surfaces for dark mode                         */
+      --specdoc-success: 160 70% 52%;
+      --specdoc-success-foreground: 222 22% 8%;
+      --specdoc-success-surface: 160 40% 16%;
 
-    --specdoc-warning:            38 85% 55%;
-    --specdoc-warning-foreground: 222 22% 8%;
-    --specdoc-warning-surface:    38 50% 16%;
+      --specdoc-warning: 38 85% 55%;
+      --specdoc-warning-foreground: 222 22% 8%;
+      --specdoc-warning-surface: 38 50% 16%;
 
-    --specdoc-error:              355 65% 56%;
-    --specdoc-error-foreground:   222 22% 8%;
-    --specdoc-error-surface:      355 40% 16%;
+      --specdoc-error: 355 65% 56%;
+      --specdoc-error-foreground: 222 22% 8%;
+      --specdoc-error-surface: 355 40% 16%;
 
-    --specdoc-info:               199 65% 52%;
-    --specdoc-info-foreground:    222 22% 8%;
-    --specdoc-info-surface:       199 35% 16%;
+      --specdoc-info: 199 65% 52%;
+      --specdoc-info-foreground: 222 22% 8%;
+      --specdoc-info-surface: 199 35% 16%;
 
-    /* AI tokens dark mode                                                      */
-    --specdoc-ai-high:            160 70% 52%;
-    --specdoc-ai-high-surface:    160 40% 15%;
-    --specdoc-ai-high-foreground: 160 60% 88%;
+      /* AI tokens dark mode                                                      */
+      --specdoc-ai-high: 160 70% 52%;
+      --specdoc-ai-high-surface: 160 40% 15%;
+      --specdoc-ai-high-foreground: 160 60% 88%;
 
-    --specdoc-ai-medium:          38 85% 55%;
-    --specdoc-ai-medium-surface:  38 50% 15%;
-    --specdoc-ai-medium-foreground: 38 80% 88%;
+      --specdoc-ai-medium: 38 85% 55%;
+      --specdoc-ai-medium-surface: 38 50% 15%;
+      --specdoc-ai-medium-foreground: 38 80% 88%;
 
-    --specdoc-ai-low:             355 65% 56%;
-    --specdoc-ai-low-surface:     355 40% 15%;
-    --specdoc-ai-low-foreground:  355 55% 88%;
+      --specdoc-ai-low: 355 65% 56%;
+      --specdoc-ai-low-surface: 355 40% 15%;
+      --specdoc-ai-low-foreground: 355 55% 88%;
 
-    --specdoc-ai-surface:         189 30% 16%;
-    --specdoc-ai-border:          189 28% 28%;
+      --specdoc-ai-surface: 189 30% 16%;
+      --specdoc-ai-border: 189 28% 28%;
 
-    --specdoc-ai-processing:      189 80% 55%;
-    --specdoc-ai-processing-surface: 189 45% 16%;
+      --specdoc-ai-processing: 189 80% 55%;
+      --specdoc-ai-processing-surface: 189 45% 16%;
 
-    /* Encounter status dark mode                                               */
-    --specdoc-encounter-not-started:      220 8% 52%;
-    --specdoc-encounter-not-started-bg:   220 8% 16%;
-    --specdoc-encounter-in-progress:      199 60% 52%;
-    --specdoc-encounter-in-progress-bg:   199 35% 16%;
-    --specdoc-encounter-ai-processing:    189 80% 55%;
-    --specdoc-encounter-ai-processing-bg: 189 45% 16%;
-    --specdoc-encounter-needs-review:     38 85% 55%;
-    --specdoc-encounter-needs-review-bg:  38 50% 15%;
-    --specdoc-encounter-finalized:        160 70% 52%;
-    --specdoc-encounter-finalized-bg:     160 40% 15%;
+      /* Encounter status dark mode                                               */
+      --specdoc-encounter-not-started: 220 8% 52%;
+      --specdoc-encounter-not-started-bg: 220 8% 16%;
+      --specdoc-encounter-in-progress: 199 60% 52%;
+      --specdoc-encounter-in-progress-bg: 199 35% 16%;
+      --specdoc-encounter-ai-processing: 189 80% 55%;
+      --specdoc-encounter-ai-processing-bg: 189 45% 16%;
+      --specdoc-encounter-needs-review: 38 85% 55%;
+      --specdoc-encounter-needs-review-bg: 38 50% 15%;
+      --specdoc-encounter-finalized: 160 70% 52%;
+      --specdoc-encounter-finalized-bg: 160 40% 15%;
 
-    /* Compliance dark mode                                                     */
-    --specdoc-compliance-compliant:       160 70% 52%;
-    --specdoc-compliance-compliant-bg:    160 40% 15%;
-    --specdoc-compliance-at-risk:         38 85% 55%;
-    --specdoc-compliance-at-risk-bg:      38 50% 15%;
-    --specdoc-compliance-non-compliant:   355 65% 56%;
-    --specdoc-compliance-non-compliant-bg: 355 40% 15%;
+      /* Compliance dark mode                                                     */
+      --specdoc-compliance-compliant: 160 70% 52%;
+      --specdoc-compliance-compliant-bg: 160 40% 15%;
+      --specdoc-compliance-at-risk: 38 85% 55%;
+      --specdoc-compliance-at-risk-bg: 38 50% 15%;
+      --specdoc-compliance-non-compliant: 355 65% 56%;
+      --specdoc-compliance-non-compliant-bg: 355 40% 15%;
 
-    /* Prior auth dark mode                                                     */
-    --specdoc-auth-pending:    220 8% 52%;    --specdoc-auth-pending-bg:    220 8% 16%;
-    --specdoc-auth-submitted:  189 80% 55%;  --specdoc-auth-submitted-bg:  189 45% 16%;
-    --specdoc-auth-approved:   160 70% 52%;  --specdoc-auth-approved-bg:   160 40% 15%;
-    --specdoc-auth-denied:     355 65% 56%;  --specdoc-auth-denied-bg:     355 40% 15%;
-    --specdoc-auth-appeal:     265 60% 65%;  --specdoc-auth-appeal-bg:     265 35% 16%;
+      /* Prior auth dark mode                                                     */
+      --specdoc-auth-pending: 220 8% 52%;
+      --specdoc-auth-pending-bg: 220 8% 16%;
+      --specdoc-auth-submitted: 189 80% 55%;
+      --specdoc-auth-submitted-bg: 189 45% 16%;
+      --specdoc-auth-approved: 160 70% 52%;
+      --specdoc-auth-approved-bg: 160 40% 15%;
+      --specdoc-auth-denied: 355 65% 56%;
+      --specdoc-auth-denied-bg: 355 40% 15%;
+      --specdoc-auth-appeal: 265 60% 65%;
+      --specdoc-auth-appeal-bg: 265 35% 16%;
 
-    /* Specialty accents dark mode                                              */
-    --specdoc-specialty-behavioral-health:    265 52% 65%;
-    --specdoc-specialty-behavioral-health-bg: 265 30% 16%;
-    --specdoc-specialty-dermatology:          350 62% 62%;
-    --specdoc-specialty-dermatology-bg:       350 40% 16%;
-    --specdoc-specialty-orthopedics:          199 60% 50%;
-    --specdoc-specialty-orthopedics-bg:       199 35% 16%;
-    --specdoc-specialty-pain-management:      28 75% 58%;
-    --specdoc-specialty-pain-management-bg:   28 50% 16%;
-    --specdoc-specialty-oncology:             152 45% 48%;
-    --specdoc-specialty-oncology-bg:          152 30% 15%;
-  }
+      /* Specialty accents dark mode                                              */
+      --specdoc-specialty-behavioral-health: 265 52% 65%;
+      --specdoc-specialty-behavioral-health-bg: 265 30% 16%;
+      --specdoc-specialty-dermatology: 350 62% 62%;
+      --specdoc-specialty-dermatology-bg: 350 40% 16%;
+      --specdoc-specialty-orthopedics: 199 60% 50%;
+      --specdoc-specialty-orthopedics-bg: 199 35% 16%;
+      --specdoc-specialty-pain-management: 28 75% 58%;
+      --specdoc-specialty-pain-management-bg: 28 50% 16%;
+      --specdoc-specialty-oncology: 152 45% 48%;
+      --specdoc-specialty-oncology-bg: 152 30% 15%;
+   }
 }
 
 @layer base {
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
+   * {
+      @apply border-border;
+   }
+
+   body {
+      @apply bg-background text-foreground;
+   }
+}
+
+@layer components {
+
+   /* ───────────────────────────────────────────────────
+     Premium Clinical Editor Overrides
+     Forces AI-generated HTML to render as high-end form fields
+  ─────────────────────────────────────────────────── */
+   .prose-clinical {
+      @apply text-white/90 text-[13.5px] leading-relaxed outline-none w-full max-w-none font-sans;
+   }
+
+   .prose-clinical h1 {
+      @apply text-lg font-black text-white uppercase tracking-wide mb-1 select-none;
+      -webkit-user-modify: read-only;
+      user-select: none;
+      pointer-events: none;
+   }
+
+   .prose-clinical h2 {
+      @apply text-[11px] font-bold text-white/50 uppercase tracking-[0.15em] mb-6 select-none;
+      -webkit-user-modify: read-only;
+      user-select: none;
+      pointer-events: none;
+   }
+
+   .prose-clinical h3 {
+      @apply text-[11px] font-bold text-[#06B6D4] uppercase tracking-[0.2em] mt-8 mb-4 border-b border-white/10 pb-2 select-none;
+      -webkit-user-modify: read-only;
+      user-select: none;
+      pointer-events: none;
+   }
+
+   /* Form-field style paragraph: Paragraphs starting with strong */
+   .prose-clinical p:has(> strong:first-child) {
+      @apply flex sm:flex-row flex-col sm:items-baseline gap-1 sm:gap-3 py-2 px-3 bg-white/[0.03] hover:bg-white/[0.04] transition-colors border border-white/[0.06] rounded-lg mb-2 shadow-sm;
+   }
+
+   .prose-clinical p>strong:first-child {
+      @apply text-white/50 font-bold min-w-[200px] uppercase text-[10px] tracking-wider shrink-0 select-none;
+      -webkit-user-modify: read-only;
+      user-select: none;
+      pointer-events: none;
+   }
+
+   /* Special explicit read-only values */
+   .prose-clinical span.readonly-value {
+      -webkit-user-modify: read-only;
+      user-select: none;
+      pointer-events: none;
+   }
+
+   /* Standard paragraphs */
+   .prose-clinical p {
+      @apply mb-4 text-white/80;
+   }
+
+   /* Professional clinical bullet points */
+   .prose-clinical ul {
+      @apply mb-4 py-3 px-4 bg-white/[0.02] border border-white/[0.05] rounded-lg space-y-2;
+   }
+
+   .prose-clinical li {
+      @apply text-white/80 relative pl-4 list-none text-[13.5px];
+   }
+
+   .prose-clinical li::before {
+      content: "▹";
+      @apply absolute left-0 text-[#06B6D4] font-bold text-sm top-[-1px];
+   }
 }

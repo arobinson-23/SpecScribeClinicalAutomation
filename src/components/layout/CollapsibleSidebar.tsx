@@ -173,12 +173,12 @@ export function CollapsibleSidebar() {
       <div className="border-t border-sidebar-border p-3 shrink-0">
         {isCollapsed ? (
           <div className="flex justify-center">
-            <UserButton afterSignOutUrl="/" />
+            <UserButton afterSignOutUrl="/" userProfileMode="modal" />
           </div>
         ) : (
           <>
             <div className="flex items-center gap-2.5 px-2 py-1.5 mb-1">
-              <UserButton afterSignOutUrl="/" />
+              <UserButton afterSignOutUrl="/" userProfileMode="modal" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-sidebar-foreground truncate">
                   {user?.primaryEmailAddress?.emailAddress ?? ""}

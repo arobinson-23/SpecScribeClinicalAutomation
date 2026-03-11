@@ -18,80 +18,102 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const dbUser = await getDbUser();
-  if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
-  if (!hasPermission(dbUser.role, "prior_auth", "create")) {
-    return NextResponse.json(apiErr("Forbidden"), { status: 403 });
-  }
+  try {
+    const dbUser = await getDbUser();
+    if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
+    if (!hasPermission(dbUser.role, "prior_auth", "create")) {
+      return NextResponse.json(apiErr("Forbidden"), { status: 403 });
+    }
 
-  const { practiceId, id: userId } = dbUser;
+    const { practiceId, id: userId } = dbUser;
 
-  const body = await req.json();
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json(apiErr(parsed.error.message), { status: 422 });
+    const body = await req.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) return NextResponse.json(apiErr(parsed.error.message), { status: 422 });
 
-  const { encounterId, payerName, payerId, procedureCodes, diagnosisCodes } = parsed.data;
+    const { encounterId, payerName, payerId, procedureCodes, diagnosisCodes } = parsed.data;
+    console.log("[PA] POST Processing Started:", { encounterId, payerName, procedureCodes });
 
-  const encounter = await prisma.encounter.findFirst({
-    where: { id: encounterId, practiceId, deletedAt: null },
-    include: { notes: true },
-  });
-  if (!encounter) return NextResponse.json(apiErr("Encounter not found"), { status: 404 });
+    const encounter = await prisma.encounter.findFirst({
+      where: { id: encounterId, practiceId, deletedAt: null },
+      include: { notes: true, patient: true, practice: true },
+    });
+    if (!encounter) {
+      console.warn("[PA] Encounter NOT FOUND:", encounterId);
+      return NextResponse.json(apiErr("Encounter not found"), { status: 404 });
+    }
 
-  const latestNote = encounter.notes[encounter.notes.length - 1];
-  if (!latestNote) return NextResponse.json(apiErr("No clinical note found for this encounter"), { status: 400 });
+    const latestNote = encounter.notes[encounter.notes.length - 1];
+    if (!latestNote) {
+      console.warn("[PA] NO NOTES FOUND for encounter:", encounterId);
+      return NextResponse.json(apiErr("No clinical note found for this encounter"), { status: 400 });
+    }
 
-  const noteText = latestNote.providerEditedNote
-    ? decryptPHI(latestNote.providerEditedNote)
-    : latestNote.aiGeneratedNote
-      ? decryptPHI(latestNote.aiGeneratedNote)
-      : null;
+    const noteText = latestNote.providerEditedNote
+      ? decryptPHI(latestNote.providerEditedNote)
+      : latestNote.aiGeneratedNote
+        ? decryptPHI(latestNote.aiGeneratedNote)
+        : null;
 
-  if (!noteText) return NextResponse.json(apiErr("Note content is empty"), { status: 400 });
+    if (!noteText) {
+      console.warn("[PA] Decrypted note TEXT IS EMPTY");
+      return NextResponse.json(apiErr("Note content is empty"), { status: 400 });
+    }
 
-  const result = await generatePriorAuthSummary({
-    payerName,
-    procedureCodes,
-    diagnosisCodes,
-    clinicalNote: noteText,
-    encounterId,
-  });
+    console.log("[PA] Calling generatePriorAuthSummary...");
+    const result = await generatePriorAuthSummary({
+      payerName,
+      procedureCodes,
+      diagnosisCodes,
+      clinicalNote: noteText,
+      encounterId,
+    });
+    console.log("[PA] AI GENERATION COMPLETE:", { hasSummary: !!result?.clinicalSummary });
 
-  // Create or update the prior auth request
-  const priorAuth = await prisma.priorAuthRequest.create({
-    data: {
+    // Create the prior auth request record
+    const priorAuthData = {
       practiceId,
       encounterId,
       payerId: payerId ?? payerName.toLowerCase().replace(/\s/g, "_"),
       payerName,
-      procedureCodes,
-      diagnosisCodes,
-      status: "pending_submission",
-      clinicalSummary: encryptPHI(result.clinicalSummary),
-    },
-  });
+      procedureCodes: procedureCodes as any,
+      diagnosisCodes: diagnosisCodes as any,
+      status: "pending_submission" as const,
+      clinicalSummary: encryptPHI(result.clinicalSummary ?? "AI Summary Pending Manual Review"),
+      medicalNecessityStatement: encryptPHI(result.medicalNecessityStatement ?? ""),
+      missingDocumentation: result.missingDocumentation as any,
+    };
 
-  await writeAuditLog({
-    practiceId,
-    userId,
-    action: "AI_INVOCATION",
-    resource: "prior_auth_request",
-    resourceId: priorAuth.id,
-    metadata: {
-      interactionType: "prior_auth",
-      payerName,
-      complianceStandard: "HIA (Alberta) / PIPEDA",
-      providerAttestationRequired: true
-    },
-  });
+    const priorAuth = await prisma.priorAuthRequest.create({
+      data: priorAuthData,
+    });
+    console.log("[PA] PriorAuth DB RECORD CREATED:", priorAuth.id);
 
-  return NextResponse.json(
-    apiOk({
-      priorAuthId: priorAuth.id,
-      clinicalSummary: result.clinicalSummary,
-      medicalNecessityStatement: result.medicalNecessityStatement,
-      missingDocumentation: result.missingDocumentation,
-    }),
-    { status: 201 }
-  );
+    await writeAuditLog({
+      practiceId,
+      userId,
+      action: "AI_INVOCATION",
+      resource: "prior_auth_request",
+      resourceId: priorAuth.id,
+      metadata: {
+        interactionType: "prior_auth",
+        payerName,
+        complianceStandard: "HIA (Alberta) / PIPEDA",
+        providerAttestationRequired: true
+      },
+    });
+
+    return NextResponse.json(
+      apiOk({
+        priorAuthId: priorAuth.id,
+        clinicalSummary: result.clinicalSummary,
+        medicalNecessityStatement: result.medicalNecessityStatement,
+        missingDocumentation: result.missingDocumentation,
+      }),
+      { status: 201 }
+    );
+  } catch (err: any) {
+    console.error("Prior auth POST error:", err);
+    return NextResponse.json(apiErr(err.message || String(err)), { status: 500 });
+  }
 }

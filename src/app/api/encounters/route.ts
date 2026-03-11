@@ -8,14 +8,14 @@ import { apiOk, apiErr } from "@/types/api";
 import { z } from "zod";
 
 const createEncounterSchema = z.object({
-  // Accept either UUID or MRN string for patient lookup
+  // Accept either UUID or PHN string for patient lookup
   patientId: z.string().uuid().optional(),
-  patientMrn: z.string().min(1).optional(),
+  patientPhn: z.string().min(1).optional(),
   encounterDate: z.string().min(1), // ISO or datetime-local format
   specialtyType: z.enum(["behavioral_health", "dermatology", "orthopedics", "pain_management", "oncology"]).optional(),
   noteType: z.enum(["progress_note", "intake", "biopsychosocial", "treatment_plan", "procedure", "consultation", "discharge"]),
   noteFormat: z.enum(["SOAP", "DAP", "BIRP", "NARRATIVE"]),
-}).refine((d) => d.patientId || d.patientMrn, { message: "patientId or patientMrn required" });
+}).refine((d) => d.patientId || d.patientPhn, { message: "patientId or patientPhn required" });
 
 export async function GET(req: NextRequest) {
   const dbUser = await getDbUser();
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
       ...(providerId ? { providerId } : {}),
     },
     include: {
-      patient: { select: { firstName: true, lastName: true, mrn: true } },
+      patient: { select: { firstName: true, lastName: true, phn: true } },
       provider: { select: { firstName: true, lastName: true, credentials: true } },
       notes: { select: { noteType: true, finalizedAt: true } },
       codes: { select: { code: true, codeType: true, providerAccepted: true } },
@@ -98,14 +98,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(apiErr(parsed.error.message), { status: 422 });
   }
 
-  const { patientId, patientMrn, encounterDate, noteType, noteFormat, specialtyType } = parsed.data;
+  const { patientId, patientPhn, encounterDate, noteType, noteFormat, specialtyType } = parsed.data;
 
-  // Verify patient belongs to practice (by ID or MRN)
+  // Verify patient belongs to practice (by ID or PHN)
   const patient = await prisma.patient.findFirst({
     where: {
       practiceId,
       deletedAt: null,
-      ...(patientId ? { id: patientId } : { mrn: patientMrn }),
+      ...(patientId ? { id: patientId } : { phn: patientPhn }),
     },
   });
   if (!patient) return NextResponse.json(apiErr("Patient not found"), { status: 404 });

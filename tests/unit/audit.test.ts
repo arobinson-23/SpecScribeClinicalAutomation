@@ -274,7 +274,7 @@ describe("writeAuditLog — action-specific audit events", () => {
       action: "CREATE",
       resource: "patient",
       resourceId: "new-patient-id",
-      fieldsChanged: ["firstName", "lastName", "dob", "mrn"],
+      fieldsChanged: ["firstName", "lastName", "dob", "phn"],
     });
 
     const data = getLastCreateCall();

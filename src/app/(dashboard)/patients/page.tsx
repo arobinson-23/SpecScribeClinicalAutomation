@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import { getDbUser } from "@/lib/auth/get-db-user";
 import { prisma } from "@/lib/db/client";
 import { decryptPHISafe } from "@/lib/db/encryption";
 import Link from "next/link";
@@ -11,12 +12,10 @@ export default async function PatientsPage() {
     redirect("/sign-in");
   }
 
-  const dbUser = await prisma.user.findFirst({
-    where: { active: true },
-    select: { practiceId: true },
-  });
+  const dbUser = await getDbUser();
+  if (!dbUser) redirect("/sign-in");
 
-  const practiceId = dbUser?.practiceId;
+  const { practiceId } = dbUser;
 
   const patients = await prisma.patient.findMany({
     where: { practiceId, deletedAt: null },
@@ -47,7 +46,7 @@ export default async function PatientsPage() {
           <thead className="border-b border-white/10 bg-white/[0.02]">
             <tr>
               <th className="text-left px-4 py-3 font-medium text-white/50">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-white/50">MRN</th>
+              <th className="text-left px-4 py-3 font-medium text-white/50">PHN</th>
               <th className="text-left px-4 py-3 font-medium text-white/50">Date of Birth</th>
               <th className="text-left px-4 py-3 font-medium text-white/50">Encounters</th>
               <th className="text-right px-4 py-3 font-medium text-white/50">Action</th>
@@ -67,7 +66,7 @@ export default async function PatientsPage() {
                   {decryptPHISafe(p.lastName) ?? "[encrypted]"},{" "}
                   {decryptPHISafe(p.firstName) ?? "[encrypted]"}
                 </td>
-                <td className="px-4 py-3 text-white/50 font-mono text-xs">{p.mrn}</td>
+                <td className="px-4 py-3 text-white/50 font-mono text-xs">{p.phn ?? "—"}</td>
                 <td className="px-4 py-3 text-white/60">
                   {decryptPHISafe(p.dob) ?? "—"}
                 </td>

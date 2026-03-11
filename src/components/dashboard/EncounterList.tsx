@@ -8,7 +8,7 @@ interface EncounterListProps {
         encounterDate: Date;
         specialtyType: SpecialtyType;
         status: EncounterStatus;
-        patient: { mrn: string };
+        patient: { phn: string };
         notes: { finalizedAt: Date | null }[];
     }[];
 }
@@ -44,7 +44,7 @@ export function EncounterList({ encounters }: EncounterListProps) {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                         <input
                             type="text"
-                            placeholder="Search MRN..."
+                            placeholder="Search PHN..."
                             className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all w-64"
                         />
                     </div>
@@ -75,10 +75,10 @@ export function EncounterList({ encounters }: EncounterListProps) {
                                 </button>
                             </div>
 
-                            {/* Patient MRN */}
+                            {/* Patient PHN */}
                             <div className="mb-4">
-                                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Patient MRN</p>
-                                <p className="text-base font-black text-white tracking-tight">{encounter.patient.mrn}</p>
+                                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Patient PHN</p>
+                                <p className="text-base font-black text-white tracking-tight">{encounter.patient.phn}</p>
                             </div>
 
                             {/* Specialty */}

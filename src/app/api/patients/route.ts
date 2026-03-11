@@ -9,7 +9,7 @@ import { apiOk, apiErr } from "@/types/api";
 import { z } from "zod";
 
 const createPatientSchema = z.object({
-  mrn: z.string().min(1),
+  phn: z.string().min(1),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 
   const decrypted = rawItems.map((p) => ({
     id: p.id,
-    mrn: p.mrn,
+    phn: p.phn,
     firstName: decryptPHISafe(p.firstName) ?? "[encrypted]",
     lastName: decryptPHISafe(p.lastName) ?? "[encrypted]",
     dob: decryptPHISafe(p.dob) ?? "[encrypted]",
@@ -58,13 +58,13 @@ export async function GET(req: NextRequest) {
     createdAt: p.createdAt,
   }));
 
-  // Post-decrypt name/MRN filter (encrypted names can't be filtered in SQL)
+  // Post-decrypt name/PHN filter (encrypted names can't be filtered in SQL)
   const searchLower = search.toLowerCase();
   const items = search
     ? decrypted
         .filter(
           (p) =>
-            p.mrn.toLowerCase().includes(searchLower) ||
+            p.phn.toLowerCase().includes(searchLower) ||
             p.firstName.toLowerCase().includes(searchLower) ||
             p.lastName.toLowerCase().includes(searchLower) ||
             `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchLower),
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
     userId,
     action: "READ",
     resource: "patient",
-    fieldsAccessed: ["id", "mrn", "firstName", "lastName", "dob"],
+    fieldsAccessed: ["id", "phn", "firstName", "lastName", "dob"],
     metadata: { count: items.length },
   });
 
@@ -97,16 +97,16 @@ export async function POST(req: NextRequest) {
   const parsed = createPatientSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json(apiErr(parsed.error.message), { status: 422 });
 
-  const { mrn, firstName, lastName, dob, sex, phone, email } = parsed.data;
+  const { phn, firstName, lastName, dob, sex, phone, email } = parsed.data;
 
-  // Check for MRN uniqueness within practice
-  const existing = await prisma.patient.findUnique({ where: { practiceId_mrn: { practiceId, mrn } } });
-  if (existing) return NextResponse.json(apiErr("A patient with this MRN already exists"), { status: 409 });
+  // Check for PHN uniqueness within practice
+  const existing = await prisma.patient.findUnique({ where: { practiceId_phn: { practiceId, phn } } });
+  if (existing) return NextResponse.json(apiErr("A patient with this PHN already exists"), { status: 409 });
 
   const patient = await prisma.patient.create({
     data: {
       practiceId,
-      mrn,
+      phn,
       firstName: encryptPHI(firstName),
       lastName: encryptPHI(lastName),
       dob: encryptPHI(dob),
@@ -125,5 +125,5 @@ export async function POST(req: NextRequest) {
     fieldsChanged: ["firstName", "lastName", "dob", "sex", "phone", "email"],
   });
 
-  return NextResponse.json(apiOk({ id: patient.id, mrn: patient.mrn }), { status: 201 });
+  return NextResponse.json(apiOk({ id: patient.id, phn: patient.phn }), { status: 201 });
 }

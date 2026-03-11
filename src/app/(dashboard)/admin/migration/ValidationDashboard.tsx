@@ -134,7 +134,7 @@ export function ValidationDashboard() {
                       }
                     </button>
                   </th>
-                  <th className="text-left px-4 py-3 font-medium text-white/50 text-xs uppercase tracking-wider">PHN (MRN)</th>
+                  <th className="text-left px-4 py-3 font-medium text-white/50 text-xs uppercase tracking-wider">PHN</th>
                   <th className="text-left px-4 py-3 font-medium text-white/50 text-xs uppercase tracking-wider">Name</th>
                   <th className="text-left px-4 py-3 font-medium text-white/50 text-xs uppercase tracking-wider">DOB</th>
                   <th className="text-left px-4 py-3 font-medium text-white/50 text-xs uppercase tracking-wider">Sex</th>
@@ -159,7 +159,7 @@ export function ValidationDashboard() {
                         : <Square className="w-4 h-4 text-white/20" />
                       }
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-white/70">{r.mrn}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-white/70">{r.phn}</td>
                     <td className="px-4 py-3 text-white/80 font-medium">{r.firstName} {r.lastName}</td>
                     <td className="px-4 py-3 text-white/60">{formatDob(r.dob)}</td>
                     <td className="px-4 py-3 text-white/50 capitalize">{r.sex ?? "—"}</td>

@@ -136,7 +136,7 @@ function CsvImportPanel() {
       <div className="p-5 space-y-4">
         <div className="text-xs text-white/40 space-y-1">
           <p>Expected columns: <span className="font-mono text-white/60">PHN, PatientPseudoID, FirstName, LastName, DOB, Sex, Phone, Email, Address, City, Province, PostalCode</span></p>
-          <p>PHN is stored as the patient MRN. All PHI fields are encrypted (AES-256-GCM) before storage.</p>
+          <p>PHN is stored as the patient identifier. All PHI fields are encrypted (AES-256-GCM) before storage.</p>
         </div>
 
         <DropZone

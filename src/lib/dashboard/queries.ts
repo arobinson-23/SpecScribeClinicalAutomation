@@ -33,7 +33,7 @@ export async function getRecentEncounters(practiceId: string) {
       encounterDate: true,
       specialtyType: true,
       status: true,
-      patient: { select: { mrn: true } },
+      patient: { select: { phn: true } },
       notes: {
         select: { finalizedAt: true },
         take: 1,

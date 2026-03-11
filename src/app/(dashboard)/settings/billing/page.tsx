@@ -1,15 +1,17 @@
 import { getDbUser } from "@/lib/auth/get-db-user";
 import { prisma } from "@/lib/db/client";
-import { createBillingPortalSession } from "@/lib/billing/stripe";
+import { createBillingPortalSession, getStripe } from "@/lib/billing/stripe";
 import { redirect } from "next/navigation";
+
+export const metadata = { title: "Billing — SpecScribe" };
 
 export default async function BillingSettingsPage() {
   const dbUser = await getDbUser();
-  const practiceId = dbUser?.practiceId;
+  if (!dbUser) redirect("/sign-in");
 
   const practice = await prisma.practice.findUnique({
-    where: { id: practiceId },
-    select: { stripeCustomerId: true, subscriptionTier: true, name: true },
+    where: { id: dbUser.practiceId },
+    select: { stripeCustomerId: true, stripeSubId: true, subscriptionTier: true, name: true },
   });
 
   const TIER_DETAILS = {
@@ -54,19 +56,58 @@ export default async function BillingSettingsPage() {
 
   const currentTier = practice?.subscriptionTier ?? "basic";
   const tierDetails = TIER_DETAILS[currentTier];
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const billingReturnUrl = `${appUrl}/settings/billing`;
 
   async function openPortal() {
     "use server";
     if (!practice?.stripeCustomerId) return;
-    const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/settings/billing`;
-    const url = await createBillingPortalSession({ customerId: practice.stripeCustomerId, returnUrl });
+    const url = await createBillingPortalSession({
+      customerId: practice.stripeCustomerId,
+      returnUrl: billingReturnUrl,
+    });
     redirect(url);
+  }
+
+  async function upgradeToProfessional() {
+    "use server";
+    if (!practice?.stripeCustomerId) return;
+
+    // If they have an active subscription, use the portal's subscription-update
+    // flow so Stripe handles proration display and payment confirmation.
+    if (practice.stripeSubId) {
+      const portalSession = await getStripe().billingPortal.sessions.create({
+        customer: practice.stripeCustomerId,
+        return_url: billingReturnUrl,
+        flow_data: {
+          type: "subscription_update",
+          subscription_update: { subscription: practice.stripeSubId },
+        },
+      });
+      redirect(portalSession.url);
+    }
+
+    // No subscription yet — send them through a new Checkout Session.
+    const priceId = process.env.STRIPE_PRICE_ID_PROFESSIONAL;
+    if (!priceId) return;
+
+    const session = await getStripe().checkout.sessions.create({
+      customer: practice.stripeCustomerId,
+      mode: "subscription",
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: billingReturnUrl,
+      cancel_url: billingReturnUrl,
+      currency: "cad",
+      automatic_tax: { enabled: true },
+      allow_promotion_codes: true,
+    });
+    if (session.url) redirect(session.url);
   }
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Billing & Subscription</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Billing &amp; Subscription</h1>
         <p className="text-slate-500 text-sm mt-0.5">Manage your plan, invoices, and payment methods</p>
       </div>
 
@@ -120,9 +161,14 @@ export default async function BillingSettingsPage() {
                 <p className="text-xs text-slate-500 mb-3">
                   Add denial prevention, FHIR EHR integration, and advanced analytics.
                 </p>
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 rounded-lg transition-colors">
-                  Upgrade to Professional
-                </button>
+                <form action={upgradeToProfessional}>
+                  <button
+                    type="submit"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 rounded-lg transition-colors"
+                  >
+                    Upgrade to Professional
+                  </button>
+                </form>
               </div>
             )}
             <div className="border border-slate-200 rounded-xl p-4">
@@ -131,9 +177,12 @@ export default async function BillingSettingsPage() {
               <p className="text-xs text-slate-500 mb-3">
                 Revenue-share model, dedicated support, custom integrations.
               </p>
-              <button className="w-full border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium py-2 rounded-lg transition-colors">
+              <a
+                href="mailto:sales@specscribe.ca"
+                className="block w-full text-center border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium py-2 rounded-lg transition-colors"
+              >
                 Contact Sales
-              </button>
+              </a>
             </div>
           </div>
         </div>

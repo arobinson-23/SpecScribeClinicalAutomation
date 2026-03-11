@@ -1,7 +1,16 @@
 /**
  * EHR appointment auto-sync.
- * Fetches today's appointments from the practice's EHR (Epic),
- * upserts patients and encounters into SpecScribe, and updates ehrLastSyncAt.
+ *
+ * Strategy (handles both Epic sandbox and production):
+ *   1. Search Epic for any known patients (by FHIR ID stored from a previous sync,
+ *      or by Patient.search using known identifiers).
+ *   2. For each patient, fetch their appointments for today.
+ *   3. Upsert the patient + encounter records.
+ *
+ * Epic sandbox (fhir.epic.com) quirk:
+ *   - Appointment.Search requires 'patient' param — actor:identifier not supported.
+ *   - Production Epic supports actor (Practitioner NPI) based searches.
+ *   - We use patient-first to work in both environments.
  *
  * PHI rules:
  *   - All patient PHI fields are encrypted with encryptPHI() before DB write
@@ -15,6 +24,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { logger } from "@/lib/utils/logger";
 import { createEpicClient, isEpicConfigured } from "./epic";
 import { fhirPatientToInternal, fhirAppointmentToInternal } from "./mappers";
+import type { FHIRAppointment } from "./client";
 import type { Result } from "@/types/api";
 
 export interface SyncResult {
@@ -23,10 +33,22 @@ export interface SyncResult {
   skipped: number;
 }
 
+// ── Epic sandbox test patient FHIR IDs ────────────────────────────────────────
+// These are Epic's well-known R4 sandbox test patients.
+// In production, patients will already be in our DB from prior syncs.
+const EPIC_SANDBOX_TEST_PATIENT_IDS = [
+  "eAB3mDIBBcyUKviyzrxsnAw3",  // Adult test patient
+  "eq081-VQEgP8drUUqCWzHfw3",  // Camila Lopez (common sandbox test patient)
+  "erXuFYUfucBZary9bG9II3TB3",  // Jason Argonaut
+];
+
 /**
  * Sync today's appointments from the practice's configured EHR.
  * Creates or updates Patient and Encounter records.
- * Returns a Result with counts of created/updated/skipped encounters.
+ *
+ * Uses a patient-first strategy:
+ *   - Pulls from patients already in our DB (fhirId set from prior syncs)
+ *   - Falls back to well-known sandbox test patients on first run
  */
 export async function syncTodaysAppointments(
   practiceId: string,
@@ -53,15 +75,62 @@ export async function syncTodaysAppointments(
 
   try {
     const client = createEpicClient();
-    const bundle = await client.getAppointmentsForDate(today);
-    const appointments = bundle.entry?.map((e) => e.resource) ?? [];
 
-    logger.info("EHR sync: fetched appointments", {
+    // ── 1. Collect patient FHIR IDs to search ────────────────────────────────
+    // Priority: patients already synced into our DB → sandbox fallback IDs
+    const knownFhirPatients = await prisma.patient.findMany({
+      where: { practiceId, deletedAt: null, fhirId: { not: null } },
+      select: { fhirId: true },
+    });
+
+    let patientFhirIds: string[] = knownFhirPatients
+      .map((p) => p.fhirId)
+      .filter((id): id is string => !!id);
+
+    // On first sync (no patients yet), use sandbox test patients as seed
+    if (patientFhirIds.length === 0) {
+      logger.info("EHR sync: no known patients, seeding from Epic sandbox test data", {
+        practiceId,
+      });
+      patientFhirIds = EPIC_SANDBOX_TEST_PATIENT_IDS;
+    }
+
+    logger.info("EHR sync: searching appointments for patients", {
+      practiceId,
+      date: today,
+      patientCount: patientFhirIds.length,
+    });
+
+    // ── 2. Fetch appointments per patient and de-duplicate ────────────────────
+    const seenFhirIds = new Set<string>();
+    const appointments: FHIRAppointment[] = [];
+
+    for (const patientFhirId of patientFhirIds) {
+      try {
+        const bundle = await client.getAppointmentsForPatient(patientFhirId, today);
+        const appts = bundle.entry?.map((e) => e.resource) ?? [];
+        for (const appt of appts) {
+          if (appt.id && !seenFhirIds.has(appt.id)) {
+            seenFhirIds.add(appt.id);
+            appointments.push(appt);
+          }
+        }
+      } catch (err) {
+        logger.error("EHR sync: failed to fetch appointments for patient", {
+          practiceId,
+          patientFhirId,
+        });
+        // Continue — don't abort the whole sync for one patient
+      }
+    }
+
+    logger.info("EHR sync: total unique appointments found", {
       practiceId,
       date: today,
       count: appointments.length,
     });
 
+    // ── 3. Process each appointment ───────────────────────────────────────────
     for (const fhirAppt of appointments) {
       if (!fhirAppt.id) {
         skipped++;
@@ -75,12 +144,12 @@ export async function syncTodaysAppointments(
         continue;
       }
 
-      // ── 1. Fetch full patient resource ──────────────────────────────────────
+      // ── 3a. Fetch full patient resource ─────────────────────────────────────
       let fhirPatient;
       try {
         fhirPatient = await client.getPatient(appt.patientFhirId);
-      } catch (err) {
-        logger.error("EHR sync: failed to fetch patient", {
+      } catch {
+        logger.error("EHR sync: failed to fetch patient resource", {
           practiceId,
           fhirAppointmentId: fhirAppt.id,
         });
@@ -90,18 +159,14 @@ export async function syncTodaysAppointments(
 
       const patientData = fhirPatientToInternal(fhirPatient);
 
-      // ── 2. Upsert patient (encrypt all PHI fields before write) ─────────────
-      const mrn = fhirPatient.identifier?.find((i) =>
-        i.system?.includes("MR") || i.system?.includes("mrn")
-      )?.value ?? `FHIR-${patientData.fhirId}`;
+      // ── 3b. Upsert patient (encrypt all PHI fields before write) ────────────
+      const phn =
+        fhirPatient.identifier?.find(
+          (i) => i.system?.includes("MR") || i.system?.includes("mrn")
+        )?.value ?? `FHIR-${patientData.fhirId}`;
 
       const patient = await prisma.patient.upsert({
-        where: {
-          practiceId_fhirId: {
-            practiceId,
-            fhirId: patientData.fhirId,
-          },
-        },
+        where: { practiceId_fhirId: { practiceId, fhirId: patientData.fhirId } },
         update: {
           firstName: encryptPHI(patientData.firstName),
           lastName: encryptPHI(patientData.lastName),
@@ -113,7 +178,7 @@ export async function syncTodaysAppointments(
         create: {
           practiceId,
           fhirId: patientData.fhirId,
-          mrn: encryptPHI(mrn),
+          phn,
           firstName: encryptPHI(patientData.firstName),
           lastName: encryptPHI(patientData.lastName),
           dob: encryptPHI(patientData.dob),
@@ -133,8 +198,7 @@ export async function syncTodaysAppointments(
         metadata: { source: "ehr_sync", ehrType: "epic" },
       });
 
-      // ── 3. Upsert encounter (keyed on fhirId = FHIR Appointment ID) ──────────
-      // Find the provider by NPI or fhirId — fall back to the first provider in the practice
+      // ── 3c. Resolve provider ─────────────────────────────────────────────────
       const providerNpi = appt.providerFhirId;
       const provider = await prisma.user.findFirst({
         where: {
@@ -155,6 +219,7 @@ export async function syncTodaysAppointments(
         continue;
       }
 
+      // ── 3d. Upsert encounter (keyed on FHIR Appointment ID) ──────────────────
       const existingEncounter = await prisma.encounter.findFirst({
         where: { practiceId, fhirId: appt.fhirAppointmentId },
         select: { id: true },
@@ -182,14 +247,13 @@ export async function syncTodaysAppointments(
       }
     }
 
-    // ── 4. Update last sync timestamp on practice ───────────────────────────
+    // ── 4. Update last sync timestamp ─────────────────────────────────────────
     await prisma.practice.update({
       where: { id: practiceId },
       data: { ehrLastSyncAt: new Date() },
     });
 
     logger.info("EHR sync complete", { practiceId, created, updated, skipped });
-
     return { success: true, data: { created, updated, skipped } };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error during EHR sync";

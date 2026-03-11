@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Loader2, Sparkles, Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,6 +39,7 @@ export function NoteEditor({
   const [currentNoteId, setCurrentNoteId] = useState(noteId);
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Placeholder.configure({ placeholder: "Generate a note from the transcript above, or start typing..." }),
@@ -46,10 +47,16 @@ export function NoteEditor({
     content: initialNote ?? "",
     editorProps: {
       attributes: {
-        class: "prose prose-sm prose-invert max-w-none focus:outline-none min-h-[300px] px-1 text-white/90",
+        class: "prose-clinical focus:outline-none min-h-[300px]",
       },
     },
   });
+
+  useEffect(() => {
+    if (editor && initialNote && editor.getHTML() !== initialNote) {
+      editor.commands.setContent(initialNote);
+    }
+  }, [editor, initialNote]);
 
   const generateNote = useCallback(async () => {
     if (!transcript) {

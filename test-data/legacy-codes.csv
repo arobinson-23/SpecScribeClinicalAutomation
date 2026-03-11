@@ -1,0 +1,55 @@
+legacy_encounter_id,code_type,code,modifier,description,units,billed_amount,provider_accepted
+ENC-2024-0001,CPT,90837,,Psychotherapy 60 min,1,210.00,true
+ENC-2024-0001,ICD10,F41.1,,Generalized anxiety disorder,1,,true
+ENC-2024-0002,CPT,90834,,Psychotherapy 45 min,1,165.00,true
+ENC-2024-0002,ICD10,F33.1,,Major depressive disorder recurrent moderate,1,,true
+ENC-2024-0003,CPT,90791,,Psychiatric diagnostic evaluation,1,350.00,true
+ENC-2024-0003,ICD10,F32.1,,Major depressive disorder single episode moderate,1,,true
+ENC-2024-0003,ICD10,F41.1,,Generalized anxiety disorder,1,,true
+ENC-2024-0004,CPT,90837,,Psychotherapy 60 min,1,210.00,true
+ENC-2024-0004,ICD10,F33.0,,Major depressive disorder recurrent mild,1,,true
+ENC-2024-0004,ICD10,F12.10,,Cannabis use disorder mild,1,,true
+ENC-2024-0005,CPT,90834,,Psychotherapy 45 min,1,165.00,true
+ENC-2024-0005,ICD10,F41.0,,Panic disorder,1,,true
+ENC-2024-0006,CPT,90792,,Psychiatric diagnostic evaluation with medical services,1,400.00,true
+ENC-2024-0006,ICD10,F43.10,,Post-traumatic stress disorder unspecified,1,,true
+ENC-2024-0006,ICD10,F32.2,,Major depressive disorder single episode severe without psychosis,1,,true
+ENC-2024-0007,CPT,90837,,Psychotherapy 60 min,1,210.00,true
+ENC-2024-0007,ICD10,F32.2,,Major depressive disorder single episode severe,1,,true
+ENC-2024-0007,ICD10,F41.1,,Generalized anxiety disorder,1,,true
+ENC-2024-0008,CPT,90834,,Psychotherapy 45 min,1,165.00,true
+ENC-2024-0008,ICD10,G47.00,,Insomnia disorder unspecified,1,,true
+ENC-2024-0009,CPT,90838,,Psychotherapy 60 min with E/M,-25,255.00,true
+ENC-2024-0009,ICD10,F31.81,,Bipolar II disorder,1,,true
+ENC-2024-0010,CPT,90837,,Psychotherapy 60 min,1,210.00,true
+ENC-2024-0010,ICD10,F31.81,,Bipolar II disorder,1,,true
+ENC-2024-0011,CPT,90837,,Psychotherapy 60 min,1,210.00,true
+ENC-2024-0011,ICD10,F41.1,,Generalized anxiety disorder,1,,true
+ENC-2024-0011,ICD10,F43.21,,Adjustment disorder with anxiety,1,,true
+ENC-2024-0012,CPT,90791,,Psychiatric diagnostic evaluation,1,350.00,true
+ENC-2024-0012,ICD10,F40.10,,Social anxiety disorder unspecified,1,,true
+ENC-2024-0013,CPT,90834,,Psychotherapy 45 min,1,165.00,true
+ENC-2024-0013,ICD10,F41.0,,Panic disorder,1,,true
+ENC-2024-0014,CPT,90837,,Psychotherapy 60 min,1,210.00,true
+ENC-2024-0014,ICD10,F43.21,,Adjustment disorder with anxiety,1,,true
+ENC-2024-0015,CPT,90832,,Psychotherapy 30 min,1,120.00,true
+ENC-2024-0015,ICD10,F32.2,,Major depressive disorder single episode severe,1,,true
+ENC-2024-0016,CPT,90834,,Psychotherapy 45 min,1,165.00,true
+ENC-2024-0016,ICD10,F32.1,,Major depressive disorder single episode moderate,1,,true
+ENC-2024-0017,CPT,90837,,Psychotherapy 60 min,1,210.00,true
+ENC-2024-0017,ICD10,F32.2,,Major depressive disorder single episode severe,1,,true
+ENC-2024-0017,ICD10,Z91.5,,Personal history of self-harm,1,,true
+ENC-2024-0018,CPT,90834,,Psychotherapy 45 min,1,165.00,true
+ENC-2024-0018,ICD10,Z63.0,,Problems in relationship with spouse or partner,1,,true
+ENC-2024-0019,CPT,90834,,Psychotherapy 45 min,1,165.00,true
+ENC-2024-0019,ICD10,F43.10,,Post-traumatic stress disorder,1,,true
+ENC-2024-0020,CPT,90834,,Psychotherapy 45 min,1,165.00,true
+ENC-2024-0020,ICD10,F43.21,,Adjustment disorder with anxiety,1,,true
+ENC-2024-0021,CPT,90837,,Psychotherapy 60 min,1,210.00,true
+ENC-2024-0021,ICD10,F41.1,,Generalized anxiety disorder,1,,true
+ENC-2024-0022,CPT,90791,,Psychiatric diagnostic evaluation,1,350.00,true
+ENC-2024-0022,ICD10,F90.0,,Attention-deficit hyperactivity disorder predominantly inattentive,1,,true
+ENC-2024-0022,ICD10,F41.1,,Generalized anxiety disorder,1,,true
+ENC-2024-0023,CPT,90837,,Psychotherapy 60 min,1,210.00,true
+ENC-2024-0023,CPT,99999,,INVALID CODE — should fail validation,1,99.00,false
+ENC-2024-0023,ICD10,F41.1,,Generalized anxiety disorder,1,,true

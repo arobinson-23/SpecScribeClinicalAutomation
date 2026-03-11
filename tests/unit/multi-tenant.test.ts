@@ -63,7 +63,7 @@ function createMockPrisma(authorisedPracticeId: string) {
                 encounterDate: new Date(),
                 specialtyType: "behavioral_health",
                 status: "needs_review",
-                patient: { mrn: "MRN-001" },
+                patient: { phn: "PHN-001" },
                 notes: [],
               },
             ])

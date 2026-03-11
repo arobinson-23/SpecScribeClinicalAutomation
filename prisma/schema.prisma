@@ -74,6 +74,7 @@ model User {
   migrationLogs                MigrationLog[]
   verifications                ProviderVerification[]
   verificationsPerformed       ProviderVerification[] @relation("VerifiedBy")
+  signedPriorAuths             PriorAuthRequest[]     @relation("PaSignedBy")
   practice                     Practice               @relation(fields: [practiceId], references: [id])
 
   @@index([practiceId])
@@ -83,7 +84,7 @@ model User {
 model Patient {
   id            String      @id @default(dbgenerated("uuid_generate_v4()"))
   practiceId    String      @map("practice_id")
-  mrn           String
+  phn           String
   firstName     String      @map("first_name")
   lastName      String      @map("last_name")
   dob           String      @map("dob")
@@ -101,7 +102,7 @@ model Patient {
   encounters    Encounter[]
   practice      Practice    @relation(fields: [practiceId], references: [id])
 
-  @@unique([practiceId, mrn])
+  @@unique([practiceId, phn])
   @@unique([practiceId, fhirId])
   @@index([practiceId])
   @@map("patients")
@@ -221,28 +222,37 @@ model SpecialtyTemplate {
 }
 
 model PriorAuthRequest {
-  id                String          @id @default(dbgenerated("uuid_generate_v4()"))
-  practiceId        String          @map("practice_id")
-  encounterId       String          @map("encounter_id")
-  payerId           String          @map("payer_id")
-  payerName         String          @map("payer_name")
-  procedureCodes    Json            @map("procedure_codes")
-  diagnosisCodes    Json            @map("diagnosis_codes")
-  status            PriorAuthStatus @default(not_required)
-  authNumber        String?         @map("auth_number")
-  submittedAt       DateTime?       @map("submitted_at")
-  approvedAt        DateTime?       @map("approved_at")
-  denied_at         DateTime?
-  expiresAt         DateTime?       @map("expires_at")
-  denial_reason     String?
-  clinicalSummary   String?         @map("clinical_summary")
-  supportingDocs    Json            @default("[]") @map("supporting_docs")
-  appealDeadline    DateTime?       @map("appeal_deadline")
-  appealSubmittedAt DateTime?       @map("appeal_submitted_at")
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
-  encounter         Encounter       @relation(fields: [encounterId], references: [id])
-  practice          Practice        @relation(fields: [practiceId], references: [id])
+  id                       String          @id @default(dbgenerated("uuid_generate_v4()"))
+  practiceId               String          @map("practice_id")
+  encounterId              String          @map("encounter_id")
+  payerId                  String          @map("payer_id")
+  payerName                String          @map("payer_name")
+  payerPreset              String?         @map("payer_preset")
+  procedureCodes           Json            @map("procedure_codes")
+  diagnosisCodes           Json            @map("diagnosis_codes")
+  status                   PriorAuthStatus @default(not_required)
+  authNumber               String?         @map("auth_number")
+  submittedAt              DateTime?       @map("submitted_at")
+  approvedAt               DateTime?       @map("approved_at")
+  denied_at                DateTime?
+  expiresAt                DateTime?       @map("expires_at")
+  denial_reason            String?
+  clinicalSummary          String?         @map("clinical_summary")
+  medicalNecessityStatement String?        @map("medical_necessity_statement")
+  missingDocumentation     Json            @default("[]") @map("missing_documentation")
+  supportingDocs           Json            @default("[]") @map("supporting_docs")
+  stepTherapyJson          Json            @default("[]") @map("step_therapy_json")
+  dsmCodes                 Json            @default("[]") @map("dsm_codes")
+  physicianSignedAt        DateTime?       @map("physician_signed_at")
+  physicianSignedById      String?         @map("physician_signed_by_id")
+  aiDisclosureAcknowledged Boolean         @default(false) @map("ai_disclosure_acknowledged")
+  appealDeadline           DateTime?       @map("appeal_deadline")
+  appealSubmittedAt        DateTime?       @map("appeal_submitted_at")
+  createdAt                DateTime        @default(now()) @map("created_at")
+  updatedAt                DateTime        @updatedAt @map("updated_at")
+  encounter                Encounter       @relation(fields: [encounterId], references: [id])
+  practice                 Practice        @relation(fields: [practiceId], references: [id])
+  physicianSignedBy        User?           @relation("PaSignedBy", fields: [physicianSignedById], references: [id])
 
   @@index([practiceId])
   @@index([encounterId])
@@ -469,6 +479,8 @@ enum CodeType {
   CPT
   ICD10
   HCPCS
+  AHCIP
+  ICD10_CA
 }
 
 enum ClaimStatus {

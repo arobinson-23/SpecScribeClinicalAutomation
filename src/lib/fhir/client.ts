@@ -180,12 +180,48 @@ export class FHIRClient {
 
   // ── Appointment ────────────────────────────────────────────────────────────
 
-  async getAppointmentsForDate(date: string): Promise<FHIRBundle<FHIRAppointment>> {
-    const query = new URLSearchParams({
-      date: `ge${date}T00:00:00`,
-      _sort: "date",
-      _count: "100",
-    });
+  async getAppointmentsForDate(
+    date: string,
+    options?: {
+      /** NPI of the practitioner — used as actor:identifier in production Epic */
+      actorNpi?: string;
+      /** Raw FHIR Practitioner resource ID */
+      actorFhirId?: string;
+      /** FHIR Patient resource ID — required by Epic sandbox (fhir.epic.com) */
+      patientFhirId?: string;
+    }
+  ): Promise<FHIRBundle<FHIRAppointment>> {
+    // Epic system-scope requires a search anchor alongside 'date'.
+    // Sandbox (fhir.epic.com): requires 'patient' — actor:identifier not supported.
+    // Production Epic: requires 'actor' (Practitioner NPI or FHIR ID).
+    const query = new URLSearchParams();
+    query.append("date", `ge${date}`);
+    query.append("date", `le${date}`);
+    query.append("_count", "100");
+
+    if (options?.patientFhirId) {
+      query.set("patient", options.patientFhirId);
+    } else if (options?.actorNpi) {
+      query.set("actor:identifier", `http://hl7.org/fhir/sid/us-npi|${options.actorNpi}`);
+    } else if (options?.actorFhirId) {
+      query.set("actor", `Practitioner/${options.actorFhirId}`);
+    }
+
+    return this.request<FHIRBundle<FHIRAppointment>>(`Appointment?${query}`);
+  }
+
+  /** Fetch all appointments for a specific patient (works in Epic sandbox). */
+  async getAppointmentsForPatient(
+    patientFhirId: string,
+    date?: string
+  ): Promise<FHIRBundle<FHIRAppointment>> {
+    const query = new URLSearchParams();
+    query.set("patient", patientFhirId);
+    query.append("_count", "100");
+    if (date) {
+      query.append("date", `ge${date}`);
+      query.append("date", `le${date}`);
+    }
     return this.request<FHIRBundle<FHIRAppointment>>(`Appointment?${query}`);
   }
 

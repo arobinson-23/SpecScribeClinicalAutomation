@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 
 export interface SamplePatientRecord {
   id: string;
-  mrn: string;            // PHN
+  phn: string;
   firstName: string;
   lastName: string;
   dob: string;
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   // ── Auth + RBAC: admin / superadmin only ───────────────────────────────────
   const dbUser = await getDbUser();
   if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
-  if (!hasPermission(dbUser.role, "user_management", "create")) {
+  if (!hasPermission(dbUser.role, "practice_settings", "read")) {
     return NextResponse.json(apiErr("Forbidden"), { status: 403 });
   }
 
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
     },
     select: {
       id: true,
-      mrn: true,
+      phn: true,
       firstName: true,
       lastName: true,
       dob: true,
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     action: "READ",
     resource: "patient",
     outcome: "success",
-    fieldsAccessed: ["id", "mrn", "firstName", "lastName", "dob", "sex", "metadata"],
+    fieldsAccessed: ["id", "phn", "firstName", "lastName", "dob", "sex", "metadata"],
     metadata: { source: "migration_validation_sample", count: rawPatients.length },
   });
 
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     const meta = p.metadata as Record<string, string>;
     return {
       id: p.id,
-      mrn: p.mrn,
+      phn: p.phn,
       firstName: decryptPHISafe(p.firstName) ?? "[encrypted]",
       lastName: decryptPHISafe(p.lastName) ?? "[encrypted]",
       dob: decryptPHISafe(p.dob) ?? "[encrypted]",

@@ -11,7 +11,7 @@ import type {
 export type EncounterWithRelations = Encounter & {
   notes: EncounterNote[];
   codes: EncounterCode[];
-  patient: { firstName: string; lastName: string; mrn: string };
+  patient: { firstName: string; lastName: string; phn: string };
   provider: { firstName: string; lastName: string; credentials: string | null };
 };
 
@@ -27,12 +27,18 @@ export interface GenerateNoteInput {
   transcript: string;
   noteType: NoteType;
   noteFormat: NoteFormat;
+  clinicName?: string;
+  patientName?: string;
+  providerName?: string;
+  encounterDate?: string;
+  sessionDurationMinutes?: number;
   patientContext?: {
     ageYears?: number;
     biologicalSex?: string;
     priorDiagnoses?: string[];
     currentMedications?: string[];
     chiefComplaint?: string;
+    historicalContext?: string;
   };
 }
 

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   // ── Auth + RBAC: admin / superadmin only ───────────────────────────────────
   const dbUser = await getDbUser();
   if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
-  if (!hasPermission(dbUser.role, "user_management", "create")) {
+  if (!hasPermission(dbUser.role, "practice_settings", "create")) {
     return NextResponse.json(apiErr("Forbidden"), { status: 403 });
   }
 
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     try {
       // Check for duplicate (PHN is stored as mrn, practice-scoped unique)
       const existing = await prisma.patient.findUnique({
-        where: { practiceId_mrn: { practiceId, mrn: row.phn } },
+        where: { practiceId_phn: { practiceId, phn: row.phn } },
         select: { id: true },
       });
 
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
       const patient = await prisma.patient.create({
         data: {
           practiceId,
-          mrn: row.phn,                          // PHN stored as MRN (not encrypted — used as lookup key)
+          phn: row.phn,
           firstName: encryptPHI(row.firstName),
           lastName: encryptPHI(row.lastName),
           dob: encryptPHI(row.dob),
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
         resource: "patient",
         resourceId: patient.id,
         outcome: "success",
-        fieldsChanged: ["mrn", "firstName", "lastName", "dob", "sex", "phone", "email", "address", "metadata"],
+        fieldsChanged: ["phn", "firstName", "lastName", "dob", "sex", "phone", "email", "address", "metadata"],
         metadata: { batchId, source: "migration_import" },
       });
 

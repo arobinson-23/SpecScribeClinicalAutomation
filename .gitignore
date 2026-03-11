@@ -25,3 +25,8 @@ npm-debug.log*
 
 # typescript
 *.tsbuildinfo
+epic-private.pem
+epic-private-b64.txt
+
+# accidental Windows NUL device file
+/nul

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   // ── Auth + RBAC: admin / superadmin only ───────────────────────────────────
   const dbUser = await getDbUser();
   if (!dbUser) return NextResponse.json(apiErr("Unauthorized"), { status: 401 });
-  if (!hasPermission(dbUser.role, "user_management", "create")) {
+  if (!hasPermission(dbUser.role, "practice_settings", "create")) {
     return NextResponse.json(apiErr("Forbidden"), { status: 403 });
   }
 

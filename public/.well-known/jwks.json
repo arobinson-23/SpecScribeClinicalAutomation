@@ -1,0 +1,12 @@
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "n": "5V4n57vzmWqcEhcwZIAP85bKV40xBSKZbT5AumJRsq9Jx7YruwLhH9jiEHr3MsUrfX51v3xI_819MHU-17WzbCMScqMrnTS5KXJy5_UvsabZxFmtisPuWYd4J8SlCGctU7GZuwYAknoOSujvzx-AziCtl-HjB6FsUn6Nmn_TvBBBQJ_3oWI3x6hk8m2MdF3mSgnp4wbFCaPd_m6qEX2EFfYjiB5DFdYdSJ9P-vkL2zIkmVFAJZlYDTR6-72XSS8nDxNQmBvSeBfqjDGyKEN4p75XJcDun-yuQIWh6sDXIj_I7EzlrqaodKHfiJ8SL86V5Or9_BKJFjJiXQdomoA8DQ",
+      "e": "AQAB",
+      "use": "sig",
+      "alg": "RS384",
+      "kid": "specscribe-epic-key-1"
+    }
+  ]
+}

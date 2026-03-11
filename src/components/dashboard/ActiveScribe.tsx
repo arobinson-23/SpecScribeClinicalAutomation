@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 interface PatientResult {
   id: string;
-  mrn: string;
+  phn: string;
   firstName: string;
   lastName: string;
 }
@@ -87,7 +87,7 @@ export function ActiveScribe() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          patientMrn: selectedPatient.mrn,
+          patientPhn: selectedPatient.phn,
           encounterDate: new Date().toISOString(),
           noteType,
           noteFormat,
@@ -241,8 +241,8 @@ export function ActiveScribe() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
                 <input
                   type="text"
-                  placeholder="Search by name or MRN..."
-                  value={selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName} (${selectedPatient.mrn})` : patientSearch}
+                  placeholder="Search by name or PHN..."
+                  value={selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName} (${selectedPatient.phn})` : patientSearch}
                   onChange={(e) => { setSelectedPatient(null); setPatientSearch(e.target.value); }}
                   onFocus={() => { if (selectedPatient) { setSelectedPatient(null); setPatientSearch(""); } }}
                   className="w-full pl-8 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.07]"
@@ -259,7 +259,7 @@ export function ActiveScribe() {
                       className="w-full text-left px-4 py-2.5 hover:bg-white/5 transition-colors flex items-center justify-between group"
                     >
                       <span className="text-sm text-white">{p.firstName} {p.lastName}</span>
-                      <span className="text-xs text-white/40 group-hover:text-white/60 font-mono">{p.mrn}</span>
+                      <span className="text-xs text-white/40 group-hover:text-white/60 font-mono">{p.phn}</span>
                     </button>
                   ))}
                 </div>

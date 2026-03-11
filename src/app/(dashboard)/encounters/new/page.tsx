@@ -7,7 +7,7 @@ import { Search, Loader2, X } from "lucide-react";
 
 interface PatientResult {
   id: string;
-  mrn: string;
+  phn: string;
   firstName: string;
   lastName: string;
 }
@@ -56,7 +56,7 @@ export default function NewEncounterPage() {
     }
 
     const form = new FormData(e.currentTarget);
-    const patientMrn = selectedPatient.mrn;
+    const patientPhn = selectedPatient.phn;
     const encounterDate = form.get("encounterDate") as string;
     const specialtyType = form.get("specialtyType") as string;
     const noteType = form.get("noteType") as string;
@@ -69,7 +69,7 @@ export default function NewEncounterPage() {
       const encounterRes = await fetch("/api/encounters", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patientMrn, encounterDate, specialtyType, noteType, noteFormat }),
+        body: JSON.stringify({ patientPhn, encounterDate, specialtyType, noteType, noteFormat }),
       });
 
       if (!encounterRes.ok) {
@@ -144,7 +144,7 @@ export default function NewEncounterPage() {
                   <div className="w-full pl-8 pr-8 py-2 bg-blue-500/10 border border-blue-500/30 rounded-lg text-sm text-white flex items-center">
                     <span className="flex-1">
                       {selectedPatient.firstName} {selectedPatient.lastName}
-                      <span className="ml-2 text-xs font-mono text-white/40">{selectedPatient.mrn}</span>
+                      <span className="ml-2 text-xs font-mono text-white/40">{selectedPatient.phn}</span>
                     </span>
                     <button
                       type="button"
@@ -157,7 +157,7 @@ export default function NewEncounterPage() {
                 ) : (
                   <input
                     type="text"
-                    placeholder="Search by name or MRN…"
+                    placeholder="Search by name or PHN…"
                     value={patientSearch}
                     onChange={(e) => setPatientSearch(e.target.value)}
                     className={`${inputClass} pl-8 pr-8`}
@@ -179,7 +179,7 @@ export default function NewEncounterPage() {
                       className="w-full text-left px-4 py-2.5 hover:bg-white/5 transition-colors flex items-center justify-between border-b border-white/5 last:border-0"
                     >
                       <span className="text-sm text-white">{p.firstName} {p.lastName}</span>
-                      <span className="text-xs font-mono text-white/40">{p.mrn}</span>
+                      <span className="text-xs font-mono text-white/40">{p.phn}</span>
                     </button>
                   ))}
                 </div>

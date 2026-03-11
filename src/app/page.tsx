@@ -19,7 +19,7 @@ export default function LandingPage() {
           <p className="text-base sm:text-xl text-blue-100/70 max-w-lg mx-auto mb-10 leading-relaxed">
             SpecScribe listens to your encounter, writes your note, and suggests billing codes — so you can focus on your patient.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mx-auto w-fit">
             <Link
               href="/login?mode=signup"
               className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3.5 rounded-full transition-colors shadow-lg shadow-blue-600/30"

@@ -111,7 +111,7 @@ export default async function PatientDetailPage({
               {lastName}, {firstName}
             </h1>
             <span className="font-mono text-xs bg-white/[0.06] border border-white/10 text-white/60 px-2 py-0.5 rounded-md">
-              {patient.mrn}
+              {patient.phn}
             </span>
             <span
               className={`text-xs font-medium px-2 py-0.5 rounded-full ${

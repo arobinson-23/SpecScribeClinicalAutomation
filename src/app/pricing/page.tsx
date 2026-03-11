@@ -21,12 +21,12 @@ export default function PricingPage() {
                         The last documentation tool you&apos;ll <span className="text-blue-600 italic">ever</span> need.
                     </h1>
                     <p className="text-base sm:text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-12">
-                        Stop paying for human scribes or wasting 2+ hours a day charting. SpecScribe pays for itself in just 3 days of clinical time.
+                        Stop losing $2,200+ a month in unbillable administrative time. SpecScribe pays for itself in just days, ending the burnout tax for good.
                     </p>
 
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Link href="/login?mode=signup" className="group relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 py-4 rounded-full transition-all shadow-xl shadow-blue-600/30 active:scale-[0.98]">
-                            Start 30-Day Free Trial
+                            Claim 7-Day Pre-filled Migration
                             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                         </Link>
                         <Link href="/demo" className="flex items-center justify-center gap-2 bg-white border-2 border-slate-100 hover:border-blue-600/20 text-slate-700 font-bold px-10 py-4 rounded-full transition-all">
@@ -42,7 +42,7 @@ export default function PricingPage() {
 
                 <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 relative">
                     {[
-                        { icon: Clock, title: "12 Hours Saved", desc: "Average weekly time saved on charting for every physician in the practice.", stat: "75%", statLabel: "Time Reduction" },
+                        { icon: Clock, title: "Stop the Revenue Leak", desc: "Stop losing billable hours to after-hours charting and administrative tasks.", stat: "$2.2k+", statLabel: "Monthly Lost Revenue Avoided" },
                         { icon: TrendingUp, title: "Higher Billing Accuracy", desc: "AI-suggested billing codes prevent under-billing in 28% of encounters.", stat: "$1.4k", statLabel: "Monthly Revenue Lift" },
                         { icon: ShieldCheck, title: "Bulletproof Compliance", desc: "Automated audit logs and PIPEDA/HIA compliance built-in from day one.", stat: "0", statLabel: "Security Breaches" },
                     ].map((item, idx) => (
@@ -82,7 +82,7 @@ export default function PricingPage() {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {[
-                                        { feature: "Monthly Cost ($/Physician)", human: "$3,500+", basic: "$50 - $100", spec: "$300 - $600" },
+                                        { feature: "Monthly Cost ($/Physician)", human: "$3,500+", basic: "$50 - $100", spec: "From $299" },
                                         { feature: "Accuracy / Nuance", human: "High", basic: "Low - Medium", spec: "Higher (Medical Grade)" },
                                         { feature: "PIPEDA / HIA Compliant", human: "Conditional", basic: "Often No", spec: "Certified & Guaranteed" },
                                         { feature: "Direct EHR Sync", human: "Manual Entry", basic: "Manual Paste", spec: "Automated Integration" },
@@ -111,17 +111,17 @@ export default function PricingPage() {
                         <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 md:p-7 lg:p-9 hover:border-blue-600/20 transition-all flex flex-col">
                             <div className="mb-8">
                                 <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Foundation</div>
-                                <h3 className="text-2xl font-black text-slate-900 mb-4">Solo Trial</h3>
-                                <p className="text-sm text-slate-500 leading-relaxed mb-6">Perfect for solo practitioners testing the clinical AI waters.</p>
+                                <h3 className="text-2xl font-black text-slate-900 mb-4">Solo Scribe</h3>
+                                <p className="text-sm text-slate-500 leading-relaxed mb-6">Functional and solid. Perfect for solo therapists starting out.</p>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-4xl font-black text-slate-900">$0</span>
-                                    <span className="text-sm text-slate-400 font-bold uppercase tracking-tight">/ 30 Days</span>
+                                    <span className="text-4xl font-black text-slate-900">$299</span>
+                                    <span className="text-sm text-slate-400 font-bold uppercase tracking-tight">/ Month</span>
                                 </div>
                             </div>
                             <div className="space-y-4 mb-10 flex-1">
                                 <div className="flex items-center gap-3 text-sm text-slate-600">
                                     <Check className="w-5 h-5 text-green-500 shrink-0" />
-                                    <span>20 AI encounters per month</span>
+                                    <span>Pay-Per-Encounter Trial ($2/ea)</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-slate-600">
                                     <Check className="w-5 h-5 text-green-500 shrink-0" />
@@ -129,11 +129,15 @@ export default function PricingPage() {
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-slate-400 line-through decoration-slate-200">
                                     <X className="w-5 h-5 text-slate-300 shrink-0" />
-                                    <span>EHR Automated Sync</span>
+                                    <span>Prior-Auth Builder</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm text-slate-400 line-through decoration-slate-200">
+                                    <X className="w-5 h-5 text-slate-300 shrink-0" />
+                                    <span>SMART on FHIR Sync</span>
                                 </div>
                             </div>
                             <Link href="/login?mode=signup" className="w-full text-center bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all">
-                                Start Free Trial
+                                Start with 50 Encounters
                             </Link>
                         </div>
 
@@ -144,10 +148,10 @@ export default function PricingPage() {
                             </div>
                             <div className="mb-8">
                                 <div className="text-xs font-black uppercase tracking-widest text-blue-400 mb-2">Advanced Workflow</div>
-                                <h3 className="text-2xl font-black text-white mb-4">Physician Pro</h3>
-                                <p className="text-sm text-white/40 leading-relaxed mb-6">Unlimited documentation for clinicians demanding maximum efficiency.</p>
+                                <h3 className="text-2xl font-black text-white mb-4">Clinical Command Center</h3>
+                                <p className="text-sm text-white/40 leading-relaxed mb-6">Unlimited documentation. Includes Prior-Auth and EHR Sync.</p>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-4xl font-black text-white">$450</span>
+                                    <span className="text-4xl font-black text-white">$499</span>
                                     <span className="text-sm text-white/40 font-bold uppercase tracking-tight">/ Month</span>
                                 </div>
                             </div>
@@ -158,19 +162,19 @@ export default function PricingPage() {
                                 </div>
                                 <div className="flex items-center gap-3 text-sm">
                                     <Check className="w-5 h-5 text-green-500 shrink-0" />
-                                    <span>Advanced Custom Checklists</span>
+                                    <span>Prior-Auth PDF Generator</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-blue-300">
                                     <ShieldCheck className="w-5 h-5 text-blue-400 shrink-0" />
-                                    <span>Premium EHR Sync Integration</span>
+                                    <span>SMART on FHIR Sync Integration</span>
                                 </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <Check className="w-5 h-5 text-green-500 shrink-0" />
-                                    <span>Dedicated Canadian Support</span>
+                                <div className="flex items-center gap-3 text-sm text-blue-300 font-bold">
+                                    <Check className="w-5 h-5 text-green-400 shrink-0" />
+                                    <span>7-Day Pre-filled Migration</span>
                                 </div>
                             </div>
                             <Link href="/login?mode=signup" className="w-full text-center bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-600/20">
-                                Get Started Now
+                                Claim 7-Day Pre-filled Migration
                             </Link>
                         </div>
 
@@ -178,7 +182,7 @@ export default function PricingPage() {
                         <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 md:p-7 lg:p-9 hover:border-blue-600/20 transition-all flex flex-col">
                             <div className="mb-8">
                                 <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Institutional</div>
-                                <h3 className="text-2xl font-black text-slate-900 mb-4">Enterprise Plus</h3>
+                                <h3 className="text-2xl font-black text-slate-900 mb-4">Enterprise Clinic</h3>
                                 <p className="text-sm text-slate-500 leading-relaxed mb-6">Full institutional deployment with multi-provincial compliance management.</p>
                                 <div className="flex items-baseline gap-1">
                                     <span className="text-4xl font-black text-slate-900">Custom</span>
@@ -187,19 +191,19 @@ export default function PricingPage() {
                             <div className="space-y-4 mb-10 flex-1">
                                 <div className="flex items-center gap-3 text-sm text-slate-600">
                                     <Building2 className="w-5 h-5 text-blue-600 shrink-0" />
-                                    <span>Multi-Provider Central Billing</span>
+                                    <span>Audit-Ready Guarantee (HIA)</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-slate-600">
                                     <Check className="w-5 h-5 text-green-500 shrink-0" />
-                                    <span>Enterprise API Access</span>
+                                    <span>Clinic-wide custom templates</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-slate-600">
                                     <Check className="w-5 h-5 text-green-500 shrink-0" />
-                                    <span>DPA & Custom Privacy SLAs</span>
+                                    <span>Concierge Migration Service</span>
                                 </div>
                             </div>
                             <Link href="/demo" className="w-full text-center bg-slate-100 text-slate-900 font-bold py-4 rounded-2xl hover:bg-slate-200 transition-all">
-                                Contact Sales
+                                Get Custom Assessment
                             </Link>
                         </div>
 
@@ -212,11 +216,11 @@ export default function PricingPage() {
                 <div className="max-w-3xl mx-auto">
                     <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mb-6">Ready to reclaim your evenings?</h2>
                     <p className="text-slate-500 text-base sm:text-lg mb-10 sm:mb-12">
-                        Join Canada&apos;s forward-thinking specialty practices. 30-day free trial — no credit card required.
+                        Join Canada&apos;s forward-thinking specialty practices. See your own actual patient data pre-filled before you pay.
                     </p>
                     <div className="flex flex-col items-center gap-6">
                         <Link href="/login?mode=signup" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-black px-12 py-5 rounded-full shadow-2xl shadow-blue-600/30 transition-all transform hover:scale-105 active:scale-95">
-                            Start Your Free Trial →
+                            Claim 7-Day Pre-filled Migration →
                         </Link>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                             <ShieldCheck className="w-4 h-4 text-green-500" />
